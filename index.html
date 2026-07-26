@@ -13,20 +13,31 @@
     <h1>NovaOS</h1>
     <div class="loader"></div>
 </div>
-<div id="login">
-    ...
-</div>
 
 <div id="login">
-    <form>
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
 
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+    <div class="login-box">
 
-        <button type="submit">Submit</button>
-    </form>
+        <h2>🔐 NovaOS Login</h2>
+
+        <form onsubmit="login(event)">
+
+            <label>Username:</label>
+            <input type="text" id="username" required>
+
+            <label>Password:</label>
+            <input type="password" id="password" required>
+
+            <button type="submit">
+                Sign In
+            </button>
+
+            <p id="error"></p>
+
+        </form>
+
+    </div>
+
 </div>
 
 <div id="desktop">

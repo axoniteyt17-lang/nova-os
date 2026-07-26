@@ -54,6 +54,56 @@ window.onload = () => {
 
         document.getElementById("boot").style.display = "none";
 
+        document.getElementById("login").style.display = "flex";
+
     }, 2500);
 
 };
+
+// Startup sequence
+
+window.onload = () => {
+
+    setTimeout(() => {
+
+        // Hide boot screen
+        document.getElementById("boot").style.display = "none";
+
+        // Show login
+        document.getElementById("login").style.display = "flex";
+
+    }, 2500);
+
+};
+
+
+// Login button
+
+function login(event){
+
+    event.preventDefault();
+
+    let username =
+    document.getElementById("username").value;
+
+    let password =
+    document.getElementById("password").value;
+
+
+    if(username !== "" && password !== ""){
+
+        // Hide login
+        document.getElementById("login").style.display = "none";
+
+        // Show desktop
+        document.getElementById("desktop").style.display = "block";
+
+    } 
+    else {
+
+        document.getElementById("error").textContent =
+        "Please complete all fields.";
+
+    }
+
+}
