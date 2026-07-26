@@ -8,11 +8,13 @@
 </head>
 
 <body>
+
 <div id="boot">
     <div id="logo">🖥️</div>
     <h1>NovaOS</h1>
     <div class="loader"></div>
 </div>
+
 
 <div id="login">
 
@@ -40,6 +42,8 @@
 
 </div>
 
+
+
 <div id="desktop">
 
 
@@ -48,10 +52,12 @@
         <span>Files</span>
     </div>
 
+
     <div class="icon" onclick="openApp('browser')">
         <div class="emoji">🌐</div>
         <span>Browser</span>
     </div>
+
 
     <div class="icon" onclick="openApp('settings')">
         <div class="emoji">⚙️</div>
@@ -59,9 +65,12 @@
     </div>
 
 
-    <!-- Apps -->
+
+    <!-- WINDOWS -->
+
 
     <div class="window" id="files">
+
         <div class="titlebar">
             File Explorer
             <button onclick="closeApp('files')">✖</button>
@@ -70,42 +79,75 @@
         <p>📄 Welcome.txt</p>
         <p>📁 Games</p>
         <p>🖼 Photos</p>
+
     </div>
 
 
+
     <div class="window" id="browser">
+
         <div class="titlebar">
             Nova Browser
             <button onclick="closeApp('browser')">✖</button>
         </div>
 
         <h2>🌐 Nova Browser</h2>
+
         <input placeholder="Search the web...">
+
     </div>
 
 
+
+
     <div class="window" id="settings">
+
         <div class="titlebar">
             Settings
             <button onclick="closeApp('settings')">✖</button>
         </div>
 
-        <button onclick="changeWallpaper()">Change Wallpaper</button>
+        <button onclick="changeWallpaper()">
+            Change Wallpaper
+        </button>
+
     </div>
 
 
+
+
+    <!-- MACOS DOCK -->
+
+    <div id="dock">
+
+        <div class="dock-icon" onclick="openApp('files')">
+            📁
+        </div>
+
+
+        <div class="dock-icon" onclick="openApp('browser')">
+            🌐
+        </div>
+
+
+        <div class="dock-icon" onclick="openApp('settings')">
+            ⚙️
+        </div>
+
+
+        <div class="dock-line"></div>
+
+
+        <div class="dock-icon">
+            🗑️
+        </div>
+
+    </div>
+
+
+
 </div>
 
-
-<div id="taskbar">
-
-    <button id="start">
-        ⊞ Start
-    </button>
-
-    <span id="clock"></span>
-
-</div>
 
 
 <script src="script.js"></script>
