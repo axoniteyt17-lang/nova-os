@@ -150,3 +150,70 @@ input{
     padding:10px;
 
 }
+/* Boot Screen */
+
+#boot{
+    position:fixed;
+    inset:0;
+
+    background:#111827;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    color:white;
+
+    z-index:9999;
+}
+
+#logo{
+    font-size:80px;
+    margin-bottom:20px;
+}
+
+#boot h1{
+    font-size:40px;
+}
+
+.loader{
+    width:220px;
+    height:8px;
+
+    background:#333;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    margin-top:25px;
+}
+
+.loader::before{
+
+    content:"";
+
+    display:block;
+
+    width:0;
+    height:100%;
+
+    background:#3b82f6;
+
+    animation:load 2.5s linear forwards;
+
+}
+
+
+@keyframes load{
+
+    from{
+        width:0;
+    }
+
+    to{
+        width:100%;
+    }
+
+}

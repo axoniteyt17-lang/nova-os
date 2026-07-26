@@ -46,3 +46,14 @@ function changeWallpaper(){
     colours[Math.floor(Math.random()*colours.length)];
 
 }
+// Boot screen
+
+window.onload = () => {
+
+    setTimeout(() => {
+
+        document.getElementById("boot").style.display = "none";
+
+    }, 2500);
+
+};
