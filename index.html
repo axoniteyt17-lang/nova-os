@@ -3,201 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111827">
     <title>NovaOS</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <section id="boot" aria-label="NovaOS is starting">
+        <div id="logo" aria-hidden="true">✦</div>
+        <h1>NovaOS</h1>
+        <p>Starting your desktop…</p>
+        <div class="loader" aria-hidden="true"></div>
+    </section>
 
-<!-- ================= BOOT SCREEN ================= -->
+    <main id="login">
+        <div class="login-box">
+            <div class="login-logo" aria-hidden="true">✦</div>
+            <h2>Welcome to NovaOS</h2>
+            <p class="login-subtitle">Sign in with any username and password to try the demo.</p>
 
-<div id="boot">
-    <div id="logo">🖥️</div>
-    <h1>NovaOS</h1>
-    <div class="loader"></div>
-</div>
+            <form id="login-form">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username">
 
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password">
 
-<!-- ================= LOGIN ================= -->
+                <button type="submit">Sign in</button>
+                <p id="error" role="alert"></p>
+            </form>
+        </div>
+    </main>
 
-<div id="login">
+    <main id="desktop">
+        <header id="menubar">
+            <div id="menu-left">
+                <span class="nova-mark" aria-hidden="true">✦</span>
+                <strong>NovaOS</strong>
+                <span class="menu-item">File</span>
+                <span class="menu-item">Edit</span>
+                <span class="menu-item">View</span>
+                <span class="menu-item">Window</span>
+                <span class="menu-item">Help</span>
+            </div>
 
-    <div class="login-box">
+            <div id="menu-right">
+                <span title="Wi-Fi connected">📶</span>
+                <span title="Battery">🔋 100%</span>
+                <span id="clock"></span>
+            </div>
+        </header>
 
-        <h2>🔐 NovaOS Login</h2>
-
-        <form>
-
-            <label>Username</label>
-            <input id="username" type="text">
-
-            <label>Password</label>
-            <input id="password" type="password">
-
-            <button type="button" onclick="login()">
-                Sign In
+        <section id="desktop-icons" aria-label="Desktop apps">
+            <button class="icon" type="button" onclick="openApp('files')">
+                <span class="emoji" aria-hidden="true">📁</span>
+                <span>Files</span>
             </button>
 
-            <p id="error"></p>
-
-        </form>
-
-    </div>
-
-</div>
-
-
-<!-- ================= DESKTOP ================= -->
-
-<div id="desktop">
-
-
-    <!-- Top Menu -->
-
-    <div id="menubar">
-
-        <div id="menu-left">
-            <span class="apple">🍎</span>
-            <span>NovaOS</span>
-            <span>File</span>
-            <span>Edit</span>
-            <span>View</span>
-            <span>Go</span>
-            <span>Window</span>
-            <span>Help</span>
-        </div>
-
-
-        <div id="menu-right">
-            <span>📶</span>
-            <span>🔋100%</span>
-            <span id="clock"></span>
-        </div>
-
-    </div>
-
-
-
-    <!-- Desktop Icons -->
-
-    <div class="icon" onclick="openApp('files')">
-        <div class="emoji">📁</div>
-        <span>Files</span>
-    </div>
-
-
-    <div class="icon" onclick="openApp('browser')">
-        <div class="emoji">🌐</div>
-        <span>Browser</span>
-    </div>
-
-
-    <div class="icon" onclick="openApp('settings')">
-        <div class="emoji">⚙️</div>
-        <span>Settings</span>
-    </div>
-
-
-
-    <!-- WINDOWS -->
-
-
-    <div class="window" id="files">
-
-        <div class="titlebar">
-            File Explorer
-
-            <button onclick="closeApp('files')">
-                ✖
+            <button class="icon" type="button" onclick="openApp('browser')">
+                <span class="emoji" aria-hidden="true">🌐</span>
+                <span>Browser</span>
             </button>
 
-        </div>
-
-        <p>📄 Welcome.txt</p>
-        <p>📁 Games</p>
-        <p>🖼 Photos</p>
-
-    </div>
-
-
-
-    <div class="window" id="browser">
-
-        <div class="titlebar">
-
-            Nova Browser
-
-            <button onclick="closeApp('browser')">
-                ✖
+            <button class="icon" type="button" onclick="openApp('settings')">
+                <span class="emoji" aria-hidden="true">⚙️</span>
+                <span>Settings</span>
             </button>
+        </section>
 
-        </div>
+        <section class="window" id="files" aria-label="Files window">
+            <div class="titlebar">
+                <span>File Explorer</span>
+                <button class="close-button" type="button" onclick="closeApp('files')" aria-label="Close Files">×</button>
+            </div>
+            <div class="window-content files-content">
+                <button class="file-item" type="button">
+                    <span aria-hidden="true">📄</span>
+                    <span><strong>Welcome.txt</strong><small>Your NovaOS starter file</small></span>
+                </button>
+                <button class="file-item" type="button">
+                    <span aria-hidden="true">🎮</span>
+                    <span><strong>Games</strong><small>Folder</small></span>
+                </button>
+                <button class="file-item" type="button">
+                    <span aria-hidden="true">🖼️</span>
+                    <span><strong>Photos</strong><small>Folder</small></span>
+                </button>
+            </div>
+        </section>
 
-        <h2>🌐 Nova Browser</h2>
+        <section class="window" id="browser" aria-label="Browser window">
+            <div class="titlebar">
+                <span>Nova Browser</span>
+                <button class="close-button" type="button" onclick="closeApp('browser')" aria-label="Close Browser">×</button>
+            </div>
+            <div class="window-content browser-content">
+                <div class="browser-logo" aria-hidden="true">🌐</div>
+                <h2>Explore the web</h2>
+                <form id="browser-form">
+                    <input id="browser-search" type="text" placeholder="Search or enter a website" aria-label="Search the web">
+                    <button type="submit">Search</button>
+                </form>
+                <p class="hint">Results open safely in a new tab.</p>
+            </div>
+        </section>
 
-        <input type="text" placeholder="Search the web...">
+        <section class="window" id="settings" aria-label="Settings window">
+            <div class="titlebar">
+                <span>Settings</span>
+                <button class="close-button" type="button" onclick="closeApp('settings')" aria-label="Close Settings">×</button>
+            </div>
+            <div class="window-content settings-content">
+                <div>
+                    <h2>Appearance</h2>
+                    <p>Choose a new NovaOS wallpaper.</p>
+                </div>
+                <div class="wallpaper-grid" aria-label="Wallpaper choices">
+                    <button class="wallpaper wallpaper-one" type="button" onclick="changeWallpaper(0)" aria-label="Blue and purple wallpaper"></button>
+                    <button class="wallpaper wallpaper-two" type="button" onclick="changeWallpaper(1)" aria-label="Pink sunset wallpaper"></button>
+                    <button class="wallpaper wallpaper-three" type="button" onclick="changeWallpaper(2)" aria-label="Green aurora wallpaper"></button>
+                    <button class="wallpaper wallpaper-four" type="button" onclick="changeWallpaper(3)" aria-label="Dark space wallpaper"></button>
+                </div>
+                <p id="wallpaper-status">Wallpaper: Nova</p>
+            </div>
+        </section>
 
-    </div>
+        <nav id="dock" aria-label="App dock">
+            <button class="dock-icon" type="button" onclick="openApp('files')" aria-label="Open Files">📁</button>
+            <button class="dock-icon" type="button" onclick="openApp('browser')" aria-label="Open Browser">🌐</button>
+            <button class="dock-icon" type="button" onclick="openApp('settings')" aria-label="Open Settings">⚙️</button>
+            <span class="dock-line" aria-hidden="true"></span>
+            <button class="dock-icon" type="button" aria-label="Trash">🗑️</button>
+        </nav>
+    </main>
 
-
-
-    <div class="window" id="settings">
-
-        <div class="titlebar">
-
-            Settings
-
-            <button onclick="closeApp('settings')">
-                ✖
-            </button>
-
-        </div>
-
-
-        <button onclick="changeWallpaper()">
-            Change Wallpaper
-        </button>
-
-
-    </div>
-
-
-
-    <!-- Dock -->
-
-
-    <div id="dock">
-
-        <div class="dock-icon" onclick="openApp('files')">
-            📁
-        </div>
-
-
-        <div class="dock-icon" onclick="openApp('browser')">
-            🌐
-        </div>
-
-
-        <div class="dock-icon" onclick="openApp('settings')">
-            ⚙️
-        </div>
-
-
-        <div class="dock-line"></div>
-
-
-        <div class="dock-icon">
-            🗑️
-        </div>
-
-
-    </div>
-
-
-</div>
-
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
