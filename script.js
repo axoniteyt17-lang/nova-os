@@ -20,7 +20,13 @@ window.onload = function () {
 // LOGIN
 // =====================
 
-function login() {
+function login(event) {
+
+    // Stops the form refreshing the page
+    if (event) {
+        event.preventDefault();
+    }
+
 
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
@@ -77,11 +83,13 @@ function closeApp(app) {
 
 document.addEventListener("click", function(event){
 
-    if(event.target.closest(".window")){
+    let appWindow = event.target.closest(".window");
+
+    if(appWindow){
 
         windowLayer++;
 
-        event.target.closest(".window").style.zIndex = windowLayer;
+        appWindow.style.zIndex = windowLayer;
 
     }
 

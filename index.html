@@ -17,6 +17,7 @@
     <div class="loader"></div>
 </div>
 
+
 <!-- ================= LOGIN ================= -->
 
 <div id="login">
@@ -25,15 +26,15 @@
 
         <h2>🔐 NovaOS Login</h2>
 
-        <form onsubmit="login(event)">
+        <form>
 
             <label>Username</label>
-            <input id="username" type="text" required>
+            <input id="username" type="text">
 
             <label>Password</label>
-            <input id="password" type="password" required>
+            <input id="password" type="password">
 
-            <button type="submit">
+            <button type="button" onclick="login()">
                 Sign In
             </button>
 
@@ -45,9 +46,11 @@
 
 </div>
 
+
 <!-- ================= DESKTOP ================= -->
 
 <div id="desktop">
+
 
     <!-- Top Menu -->
 
@@ -64,6 +67,7 @@
             <span>Help</span>
         </div>
 
+
         <div id="menu-right">
             <span>📶</span>
             <span>🔋100%</span>
@@ -72,6 +76,8 @@
 
     </div>
 
+
+
     <!-- Desktop Icons -->
 
     <div class="icon" onclick="openApp('files')">
@@ -79,23 +85,32 @@
         <span>Files</span>
     </div>
 
+
     <div class="icon" onclick="openApp('browser')">
         <div class="emoji">🌐</div>
         <span>Browser</span>
     </div>
+
 
     <div class="icon" onclick="openApp('settings')">
         <div class="emoji">⚙️</div>
         <span>Settings</span>
     </div>
 
+
+
     <!-- WINDOWS -->
+
 
     <div class="window" id="files">
 
         <div class="titlebar">
             File Explorer
-            <button onclick="closeApp('files')">✖</button>
+
+            <button onclick="closeApp('files')">
+                ✖
+            </button>
+
         </div>
 
         <p>📄 Welcome.txt</p>
@@ -104,11 +119,18 @@
 
     </div>
 
+
+
     <div class="window" id="browser">
 
         <div class="titlebar">
+
             Nova Browser
-            <button onclick="closeApp('browser')">✖</button>
+
+            <button onclick="closeApp('browser')">
+                ✖
+            </button>
+
         </div>
 
         <h2>🌐 Nova Browser</h2>
@@ -117,36 +139,63 @@
 
     </div>
 
+
+
     <div class="window" id="settings">
 
         <div class="titlebar">
+
             Settings
-            <button onclick="closeApp('settings')">✖</button>
+
+            <button onclick="closeApp('settings')">
+                ✖
+            </button>
+
         </div>
+
 
         <button onclick="changeWallpaper()">
             Change Wallpaper
         </button>
 
+
     </div>
 
-    <!-- macOS Dock -->
+
+
+    <!-- Dock -->
+
 
     <div id="dock">
 
-        <div class="dock-icon" onclick="openApp('files')">📁</div>
+        <div class="dock-icon" onclick="openApp('files')">
+            📁
+        </div>
 
-        <div class="dock-icon" onclick="openApp('browser')">🌐</div>
 
-        <div class="dock-icon" onclick="openApp('settings')">⚙️</div>
+        <div class="dock-icon" onclick="openApp('browser')">
+            🌐
+        </div>
+
+
+        <div class="dock-icon" onclick="openApp('settings')">
+            ⚙️
+        </div>
+
 
         <div class="dock-line"></div>
 
-        <div class="dock-icon">🗑️</div>
+
+        <div class="dock-icon">
+            🗑️
+        </div>
+
 
     </div>
 
+
 </div>
+
 
 <script src="script.js"></script>
 
