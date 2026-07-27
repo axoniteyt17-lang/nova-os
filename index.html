@@ -20,14 +20,26 @@
         <div class="login-box">
             <div class="login-logo" aria-hidden="true">✦</div>
             <h2>Welcome to NovaOS</h2>
-            <p class="login-subtitle">Sign in with any username and password to try the demo.</p>
+            <p class="login-subtitle">
+                Sign in with any username and password to try the demo.
+            </p>
 
             <form id="login-form">
                 <label for="username">Username</label>
-                <input id="username" name="username" type="text" autocomplete="username">
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autocomplete="username"
+                >
 
                 <label for="password">Password</label>
-                <input id="password" name="password" type="password" autocomplete="current-password">
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                >
 
                 <button type="submit">Sign in</button>
                 <p id="error" role="alert"></p>
@@ -40,11 +52,142 @@
             <div id="menu-left">
                 <span class="nova-mark" aria-hidden="true">✦</span>
                 <strong>NovaOS</strong>
-                <span class="menu-item">File</span>
-                <span class="menu-item">Edit</span>
-                <span class="menu-item">View</span>
-                <span class="menu-item">Window</span>
-                <span class="menu-item">Help</span>
+
+                <div class="top-menu">
+                    <button
+                        class="menu-button"
+                        type="button"
+                        aria-expanded="false"
+                    >
+                        File
+                    </button>
+
+                    <div class="menu-dropdown">
+                        <button type="button" data-action="open-files">
+                            <span>📁</span>
+                            Open Files
+                        </button>
+
+                        <button type="button" data-action="open-browser">
+                            <span>🌐</span>
+                            Open Browser
+                        </button>
+
+                        <button type="button" data-action="open-settings">
+                            <span>⚙️</span>
+                            Open Settings
+                        </button>
+
+                        <div class="menu-separator"></div>
+
+                        <button type="button" data-action="lock">
+                            <span>🔒</span>
+                            Lock NovaOS
+                        </button>
+                    </div>
+                </div>
+
+                <div class="top-menu">
+                    <button
+                        class="menu-button"
+                        type="button"
+                        aria-expanded="false"
+                    >
+                        Edit
+                    </button>
+
+                    <div class="menu-dropdown">
+                        <button type="button" data-action="select-all">
+                            <span>▣</span>
+                            Select All
+                            <kbd>Ctrl+A</kbd>
+                        </button>
+
+                        <button type="button" data-action="clear-field">
+                            <span>⌫</span>
+                            Clear Field
+                        </button>
+                    </div>
+                </div>
+
+                <div class="top-menu">
+                    <button
+                        class="menu-button"
+                        type="button"
+                        aria-expanded="false"
+                    >
+                        View
+                    </button>
+
+                    <div class="menu-dropdown">
+                        <button type="button" data-action="next-wallpaper">
+                            <span>🖼️</span>
+                            Next Wallpaper
+                        </button>
+
+                        <button type="button" data-action="fullscreen">
+                            <span>⛶</span>
+                            Toggle Full Screen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="top-menu">
+                    <button
+                        class="menu-button"
+                        type="button"
+                        aria-expanded="false"
+                    >
+                        Window
+                    </button>
+
+                    <div class="menu-dropdown">
+                        <button type="button" data-action="open-files">
+                            <span>📁</span>
+                            Files
+                        </button>
+
+                        <button type="button" data-action="open-browser">
+                            <span>🌐</span>
+                            Browser
+                        </button>
+
+                        <button type="button" data-action="open-settings">
+                            <span>⚙️</span>
+                            Settings
+                        </button>
+
+                        <div class="menu-separator"></div>
+
+                        <button type="button" data-action="close-active">
+                            <span>×</span>
+                            Close Active
+                            <kbd>Esc</kbd>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="top-menu">
+                    <button
+                        class="menu-button"
+                        type="button"
+                        aria-expanded="false"
+                    >
+                        Help
+                    </button>
+
+                    <div class="menu-dropdown">
+                        <button type="button" data-action="shortcuts">
+                            <span>⌨️</span>
+                            Keyboard Shortcuts
+                        </button>
+
+                        <button type="button" data-action="about">
+                            <span>✦</span>
+                            About NovaOS
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div id="menu-right">
@@ -55,17 +198,29 @@
         </header>
 
         <section id="desktop-icons" aria-label="Desktop apps">
-            <button class="icon" type="button" onclick="openApp('files')">
+            <button
+                class="icon"
+                type="button"
+                onclick="openApp('files')"
+            >
                 <span class="emoji" aria-hidden="true">📁</span>
                 <span>Files</span>
             </button>
 
-            <button class="icon" type="button" onclick="openApp('browser')">
+            <button
+                class="icon"
+                type="button"
+                onclick="openApp('browser')"
+            >
                 <span class="emoji" aria-hidden="true">🌐</span>
                 <span>Browser</span>
             </button>
 
-            <button class="icon" type="button" onclick="openApp('settings')">
+            <button
+                class="icon"
+                type="button"
+                onclick="openApp('settings')"
+            >
                 <span class="emoji" aria-hidden="true">⚙️</span>
                 <span>Settings</span>
             </button>
@@ -74,20 +229,43 @@
         <section class="window" id="files" aria-label="Files window">
             <div class="titlebar">
                 <span>File Explorer</span>
-                <button class="close-button" type="button" onclick="closeApp('files')" aria-label="Close Files">×</button>
+
+                <button
+                    class="close-button"
+                    type="button"
+                    onclick="closeApp('files')"
+                    aria-label="Close Files"
+                >
+                    ×
+                </button>
             </div>
+
             <div class="window-content files-content">
                 <button class="file-item" type="button">
                     <span aria-hidden="true">📄</span>
-                    <span><strong>Welcome.txt</strong><small>Your NovaOS starter file</small></span>
+
+                    <span>
+                        <strong>Welcome.txt</strong>
+                        <small>Your NovaOS starter file</small>
+                    </span>
                 </button>
+
                 <button class="file-item" type="button">
                     <span aria-hidden="true">🎮</span>
-                    <span><strong>Games</strong><small>Folder</small></span>
+
+                    <span>
+                        <strong>Games</strong>
+                        <small>Folder</small>
+                    </span>
                 </button>
+
                 <button class="file-item" type="button">
                     <span aria-hidden="true">🖼️</span>
-                    <span><strong>Photos</strong><small>Folder</small></span>
+
+                    <span>
+                        <strong>Photos</strong>
+                        <small>Folder</small>
+                    </span>
                 </button>
             </div>
         </section>
@@ -95,15 +273,32 @@
         <section class="window" id="browser" aria-label="Browser window">
             <div class="titlebar">
                 <span>Nova Browser</span>
-                <button class="close-button" type="button" onclick="closeApp('browser')" aria-label="Close Browser">×</button>
+
+                <button
+                    class="close-button"
+                    type="button"
+                    onclick="closeApp('browser')"
+                    aria-label="Close Browser"
+                >
+                    ×
+                </button>
             </div>
+
             <div class="window-content browser-content">
                 <div class="browser-logo" aria-hidden="true">🌐</div>
                 <h2>Explore the web</h2>
+
                 <form id="browser-form">
-                    <input id="browser-search" type="text" placeholder="Search or enter a website" aria-label="Search the web">
+                    <input
+                        id="browser-search"
+                        type="text"
+                        placeholder="Search or enter a website"
+                        aria-label="Search the web"
+                    >
+
                     <button type="submit">Search</button>
                 </form>
+
                 <p class="hint">Results open safely in a new tab.</p>
             </div>
         </section>
@@ -111,29 +306,130 @@
         <section class="window" id="settings" aria-label="Settings window">
             <div class="titlebar">
                 <span>Settings</span>
-                <button class="close-button" type="button" onclick="closeApp('settings')" aria-label="Close Settings">×</button>
+
+                <button
+                    class="close-button"
+                    type="button"
+                    onclick="closeApp('settings')"
+                    aria-label="Close Settings"
+                >
+                    ×
+                </button>
             </div>
+
             <div class="window-content settings-content">
                 <div>
                     <h2>Appearance</h2>
                     <p>Choose a new NovaOS wallpaper.</p>
                 </div>
-                <div class="wallpaper-grid" aria-label="Wallpaper choices">
-                    <button class="wallpaper wallpaper-one" type="button" onclick="changeWallpaper(0)" aria-label="Blue and purple wallpaper"></button>
-                    <button class="wallpaper wallpaper-two" type="button" onclick="changeWallpaper(1)" aria-label="Pink sunset wallpaper"></button>
-                    <button class="wallpaper wallpaper-three" type="button" onclick="changeWallpaper(2)" aria-label="Green aurora wallpaper"></button>
-                    <button class="wallpaper wallpaper-four" type="button" onclick="changeWallpaper(3)" aria-label="Dark space wallpaper"></button>
+
+                <div
+                    class="wallpaper-grid"
+                    aria-label="Wallpaper choices"
+                >
+                    <button
+                        class="wallpaper wallpaper-one"
+                        type="button"
+                        onclick="changeWallpaper(0)"
+                        aria-label="Blue and purple wallpaper"
+                    ></button>
+
+                    <button
+                        class="wallpaper wallpaper-two"
+                        type="button"
+                        onclick="changeWallpaper(1)"
+                        aria-label="Pink sunset wallpaper"
+                    ></button>
+
+                    <button
+                        class="wallpaper wallpaper-three"
+                        type="button"
+                        onclick="changeWallpaper(2)"
+                        aria-label="Green aurora wallpaper"
+                    ></button>
+
+                    <button
+                        class="wallpaper wallpaper-four"
+                        type="button"
+                        onclick="changeWallpaper(3)"
+                        aria-label="Dark space wallpaper"
+                    ></button>
                 </div>
+
                 <p id="wallpaper-status">Wallpaper: Nova</p>
             </div>
         </section>
 
+        <section
+            class="window prompt-window"
+            id="system-prompt"
+            aria-label="NovaOS message"
+        >
+            <div class="titlebar">
+                <span id="prompt-title">NovaOS</span>
+
+                <button
+                    class="close-button"
+                    type="button"
+                    onclick="closeApp('system-prompt')"
+                    aria-label="Close message"
+                >
+                    ×
+                </button>
+            </div>
+
+            <div class="window-content prompt-content">
+                <div class="prompt-logo" aria-hidden="true">✦</div>
+                <h2 id="prompt-heading">NovaOS</h2>
+                <p id="prompt-message"></p>
+
+                <button
+                    class="primary-button"
+                    type="button"
+                    onclick="closeApp('system-prompt')"
+                >
+                    OK
+                </button>
+            </div>
+        </section>
+
         <nav id="dock" aria-label="App dock">
-            <button class="dock-icon" type="button" onclick="openApp('files')" aria-label="Open Files">📁</button>
-            <button class="dock-icon" type="button" onclick="openApp('browser')" aria-label="Open Browser">🌐</button>
-            <button class="dock-icon" type="button" onclick="openApp('settings')" aria-label="Open Settings">⚙️</button>
+            <button
+                class="dock-icon"
+                type="button"
+                onclick="openApp('files')"
+                aria-label="Open Files"
+            >
+                📁
+            </button>
+
+            <button
+                class="dock-icon"
+                type="button"
+                onclick="openApp('browser')"
+                aria-label="Open Browser"
+            >
+                🌐
+            </button>
+
+            <button
+                class="dock-icon"
+                type="button"
+                onclick="openApp('settings')"
+                aria-label="Open Settings"
+            >
+                ⚙️
+            </button>
+
             <span class="dock-line" aria-hidden="true"></span>
-            <button class="dock-icon" type="button" aria-label="Trash">🗑️</button>
+
+            <button
+                class="dock-icon"
+                type="button"
+                aria-label="Trash"
+            >
+                🗑️
+            </button>
         </nav>
     </main>
 
