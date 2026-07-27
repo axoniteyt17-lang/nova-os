@@ -1,61 +1,170 @@
-*{
-    box-sizing:border-box;
-    font-family:"Segoe UI", Arial, sans-serif;
-}
+/* ========================= */
+/*        GLOBAL             */
+/* ========================= */
 
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",Arial,sans-serif;
+}
 
 body{
-    margin:0;
     overflow:hidden;
+    background:#000;
 }
 
 
 
-/* Login Screen */
+/* ========================= */
+/*      BOOT SCREEN          */
+/* ========================= */
 
-#login {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: #111827;
-    color: white;
-    justify-content: center;
-    align-items: center;
-    z-index: 9998;
+#boot{
+
+    position:fixed;
+    inset:0;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    background:#111827;
+
+    color:white;
+
+    z-index:9999;
+
+}
+
+#logo{
+
+    font-size:90px;
+
+    margin-bottom:20px;
+
+}
+
+#boot h1{
+
+    font-size:42px;
+
+    font-weight:600;
+
+}
+
+.loader{
+
+    width:230px;
+    height:8px;
+
+    background:#333;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    margin-top:30px;
+
+}
+
+.loader::before{
+
+    content:"";
+
+    display:block;
+
+    width:0;
+    height:100%;
+
+    background:#3b82f6;
+
+    animation:load 2.5s linear forwards;
+
+}
+
+@keyframes load{
+
+    from{width:0;}
+
+    to{width:100%;}
+
 }
 
 
-.login-box {
-    background: #1f2937;
-    padding: 40px;
-    border-radius: 20px;
-    width: 320px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+
+/* ========================= */
+/*        LOGIN              */
+/* ========================= */
+
+#login{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:linear-gradient(135deg,#0f172a,#1e3a8a);
+
+    z-index:9998;
+
 }
 
+.login-box{
 
-.login-box h2 {
-    margin-bottom: 20px;
+    width:340px;
+
+    padding:40px;
+
+    border-radius:22px;
+
+    background:rgba(255,255,255,.12);
+
+    backdrop-filter:blur(20px);
+
+    color:white;
+
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+
 }
 
+.login-box h2{
 
-.login-box label {
-    display: block;
-    text-align: left;
+    margin-bottom:25px;
+
+    text-align:center;
+
 }
 
+.login-box label{
 
-.login-box input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    border: none;
+    display:block;
+
+    margin-bottom:6px;
+
 }
 
+.login-box input{
 
-.login-box button {
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:10px;
+
+    margin-bottom:18px;
+
+}
+
+.login-box button{
 
     width:100%;
 
@@ -69,12 +178,11 @@ body{
 
     color:white;
 
-    font-size:16px;
-
     cursor:pointer;
 
-}
+    transition:.25s;
 
+}
 
 .login-box button:hover{
 
@@ -82,41 +190,105 @@ body{
 
 }
 
-
 #error{
 
-    color:#ef4444;
+    margin-top:15px;
 
-    margin-top:10px;
+    color:#ffb4b4;
 
 }
 
 
 
-
-/* Desktop */
-
+/* ========================= */
+/*        DESKTOP            */
+/* ========================= */
 
 #desktop{
+
+    display:none;
 
     width:100vw;
 
     height:100vh;
 
-    background:
-    linear-gradient(135deg,#2563eb,#7c3aed);
-
-    padding:20px;
+    padding:50px 20px 20px;
 
     color:white;
+
+    background:
+    linear-gradient(135deg,#2563eb,#7c3aed);
 
 }
 
 
 
+/* ========================= */
+/*      MENU BAR             */
+/* ========================= */
 
-/* Desktop Icons */
+#menubar{
 
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+
+    height:32px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 18px;
+
+    background:rgba(255,255,255,.18);
+
+    backdrop-filter:blur(20px);
+
+    -webkit-backdrop-filter:blur(20px);
+
+    color:white;
+
+    font-size:14px;
+
+    z-index:5000;
+
+}
+
+#menu-left,
+#menu-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+.apple{
+
+    font-size:18px;
+
+}
+
+#menu-left span:hover{
+
+    background:rgba(255,255,255,.15);
+
+    padding:4px 8px;
+
+    border-radius:6px;
+
+}
+/* ========================= */
+/*      DESKTOP ICONS        */
+/* ========================= */
 
 .icon{
 
@@ -126,77 +298,43 @@ body{
 
     cursor:pointer;
 
-    margin-bottom:20px;
+    margin-bottom:25px;
+
+    transition:.25s;
+
+    user-select:none;
 
 }
 
+.icon:hover{
+
+    transform:scale(1.08);
+
+}
 
 .emoji{
 
-    font-size:45px;
+    font-size:50px;
+
+    margin-bottom:5px;
 
 }
-
 
 .icon span{
 
     display:block;
 
-}
+    font-size:14px;
 
-
-
-
-/* Old taskbar (kept for future features) */
-
-
-#taskbar{
-
-    position:fixed;
-
-    bottom:0;
-
-    left:0;
-
-    width:100%;
-
-    height:55px;
-
-    background:rgba(20,20,20,.85);
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:10px;
+    text-shadow:0 2px 5px rgba(0,0,0,.5);
 
 }
 
 
 
-#start{
-
-    background:#2563eb;
-
-    color:white;
-
-    border:none;
-
-    padding:8px 18px;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-}
-
-
-
-
-/* Windows */
-
+/* ========================= */
+/*        WINDOWS            */
+/* ========================= */
 
 .window{
 
@@ -204,238 +342,192 @@ body{
 
     position:absolute;
 
-    top:100px;
+    top:110px;
 
-    left:200px;
+    left:220px;
 
-    width:350px;
+    width:420px;
 
-    height:250px;
+    height:300px;
 
-    background:white;
-
-    color:black;
-
-    border-radius:12px;
-
-    padding:15px;
-
-    box-shadow:0 20px 50px #0008;
-
-}
-
-
-
-.titlebar{
-
-    background:#2563eb;
-
-    color:white;
-
-    padding:10px;
-
-    border-radius:8px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-}
-
-
-
-.titlebar button{
-
-    border:none;
-
-    cursor:pointer;
-
-}
-
-
-
-
-input{
-
-    width:90%;
-
-    padding:10px;
-
-}
-
-
-
-
-
-/* Boot Screen */
-
-
-#boot{
-
-    position:fixed;
-
-    inset:0;
-
-    background:#111827;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
-    align-items:center;
-
-    color:white;
-
-    z-index:9999;
-
-}
-
-
-
-#logo{
-
-    font-size:80px;
-
-    margin-bottom:20px;
-
-}
-
-
-
-#boot h1{
-
-    font-size:40px;
-
-}
-
-
-
-.loader{
-
-    width:220px;
-
-    height:8px;
-
-    background:#333;
-
-    border-radius:20px;
-
-    overflow:hidden;
-
-    margin-top:25px;
-
-}
-
-
-
-.loader::before{
-
-    content:"";
-
-    display:block;
-
-    width:0;
-
-    height:100%;
-
-    background:#3b82f6;
-
-    animation:load 2.5s linear forwards;
-
-}
-
-
-
-@keyframes load{
-
-    from{
-
-        width:0;
-
-    }
-
-
-    to{
-
-        width:100%;
-
-    }
-
-}
-
-
-
-
-
-/* ========================= */
-/*        NOVAOS DOCK        */
-/*   macOS style glass dock  */
-/* ========================= */
-
-
-#dock{
-
-    position:fixed;
-
-    bottom:20px;
-
-    left:50%;
-
-    transform:translateX(-50%);
-
-    display:flex;
-
-    align-items:center;
-
-    gap:15px;
-
-    padding:12px 20px;
-
-    background:rgba(255,255,255,0.15);
+    background:rgba(255,255,255,.92);
 
     backdrop-filter:blur(20px);
 
     -webkit-backdrop-filter:blur(20px);
 
-    border-radius:25px;
+    border-radius:18px;
 
-    box-shadow:0 10px 40px rgba(0,0,0,0.4);
+    color:#111;
+
+    overflow:hidden;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.35);
 
 }
 
+.titlebar{
 
+    height:42px;
 
-.dock-icon{
-
-    width:55px;
-
-    height:55px;
+    background:#ececec;
 
     display:flex;
 
+    justify-content:space-between;
+
     align-items:center;
 
-    justify-content:center;
+    padding:0 15px;
 
-    font-size:35px;
+    font-weight:600;
+
+    border-bottom:1px solid #ddd;
+
+}
+
+.titlebar button{
+
+    width:28px;
+
+    height:28px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#ff5f57;
+
+    color:white;
 
     cursor:pointer;
 
-    transition:0.25s;
+    transition:.2s;
+
+}
+
+.titlebar button:hover{
+
+    transform:scale(1.1);
+
+}
+
+.window p,
+.window h2,
+.window button,
+.window input{
+
+    margin:15px;
+
+}
+
+.window input{
+
+    width:calc(100% - 30px);
+
+    padding:10px;
+
+    border-radius:8px;
+
+    border:1px solid #ccc;
 
 }
 
 
+
+/* ========================= */
+/*       SETTINGS BUTTON     */
+/* ========================= */
+
+.window button{
+
+    padding:10px 16px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#2563eb;
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+.window button:hover{
+
+    background:#1d4ed8;
+
+}
+
+
+
+/* ========================= */
+/*       MACOS DOCK          */
+/* ========================= */
+
+#dock{
+
+    position:fixed;
+
+    left:50%;
+
+    bottom:20px;
+
+    transform:translateX(-50%);
+
+    display:flex;
+
+    align-items:flex-end;
+
+    gap:15px;
+
+    padding:12px 20px;
+
+    background:rgba(255,255,255,.18);
+
+    backdrop-filter:blur(20px);
+
+    -webkit-backdrop-filter:blur(20px);
+
+    border-radius:24px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+
+    z-index:4000;
+
+}
+
+.dock-icon{
+
+    width:56px;
+
+    height:56px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:36px;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    border-radius:14px;
+
+}
 
 .dock-icon:hover{
 
     transform:translateY(-15px) scale(1.25);
 
+    background:rgba(255,255,255,.2);
+
 }
-
-
 
 .dock-line{
 
@@ -445,6 +537,58 @@ input{
 
     background:white;
 
-    opacity:0.4;
+    opacity:.4;
+
+}
+
+
+
+/* ========================= */
+/*      SCROLLBARS           */
+/* ========================= */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#888;
+
+    border-radius:20px;
+
+}
+
+
+
+/* ========================= */
+/*      ANIMATIONS           */
+/* ========================= */
+
+.window{
+
+    animation:pop .2s ease;
+
+}
+
+@keyframes pop{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.9);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
 
 }
