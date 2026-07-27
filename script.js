@@ -44,9 +44,18 @@ function login() {
 // OPEN APPS
 // =====================
 
+let windowLayer = 10;
+
+
 function openApp(app) {
 
-    document.getElementById(app).style.display = "block";
+    let window = document.getElementById(app);
+
+    window.style.display = "block";
+
+    windowLayer++;
+
+    window.style.zIndex = windowLayer;
 
 }
 
@@ -60,6 +69,23 @@ function closeApp(app) {
     document.getElementById(app).style.display = "none";
 
 }
+
+
+// =====================
+// BRING WINDOWS TO FRONT
+// =====================
+
+document.addEventListener("click", function(event){
+
+    if(event.target.closest(".window")){
+
+        windowLayer++;
+
+        event.target.closest(".window").style.zIndex = windowLayer;
+
+    }
+
+});
 
 
 // =====================
