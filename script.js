@@ -14,6 +14,16 @@ const paintCanvas = document.getElementById("paint-canvas");
 const paintColour = document.getElementById("paint-colour");
 const paintSize = document.getElementById("paint-size");
 
+const filesGrid = document.getElementById("files-grid");
+const filesPath = document.getElementById("files-path");
+const filesBackButton = document.getElementById("files-back");
+const filesRenameButton = document.getElementById("files-rename");
+const filesDeleteButton = document.getElementById("files-delete");
+const filesDownloadButton = document.getElementById("files-download");
+const filesImportInput = document.getElementById("files-import-input");
+const fileEditor = document.getElementById("file-editor");
+const fileEditorContent = document.getElementById("file-editor-content");
+
 let windowLayer = 10;
 let openedWindowCount = 0;
 let currentWallpaperIndex = 0;
@@ -22,92 +32,1160 @@ let calculatorExpression = "";
 let notesSaveTimer;
 let installedApps = new Set();
 
+let currentFolderId = "root";
+let selectedFileId = null;
+let editingFileId = null;
+let folderHistory = [];
+
+
+/* VIRTUAL FILE SYSTEM */
+
+const defaultFileSystem = {
+    id: "root",
+    name: "Home",
+    type: "folder",
+
+    children: [
+        {
+            id: "welcome-file",
+            name: "Welcome.txt",
+            type: "file",
+            content:
+                "Welcome to NovaOS!\n\n" +
+                "This is a real editable virtual file.\n" +
+                "Change this text and press Save file."
+        },
+
+        {
+            id: "games-folder",
+            name: "Games",
+            type: "folder",
+
+            children: [
+                {
+                    id: "games-readme",
+                    name: "Games.txt",
+                    type: "file",
+                    content:
+                        "Your installed NovaOS games and game saves will appear here."
+                }
+            ]
+        },
+
+        {
+            id: "photos-folder",
+            name: "Photos",
+            type: "folder",
+            children: []
+        }
+    ]
+};
+
+let novaFileSystem = loadFileSystem();
+
+
+function cloneDefaultFileSystem() {
+    return JSON.parse(JSON.stringify(defaultFileSystem));
+}
+
+
+function loadFileSystem() {
+    try {
+        const savedFileSystem = JSON.parse(
+            localStorage.getItem("novaFileSystem") || "null"
+        );
+
+        if (
+            savedFileSystem &&
+            savedFileSystem.id === "root" &&
+            savedFileSystem.type === "folder" &&
+            Array.isArray(savedFileSystem.children)
+        ) {
+            return savedFileSystem;
+        }
+    } catch {
+        // Use the default files if browser storage cannot be read.
+    }
+
+    return cloneDefaultFileSystem();
+}
+
+
+function saveFileSystem() {
+    try {
+        localStorage.setItem(
+            "novaFileSystem",
+            JSON.stringify(novaFileSystem)
+        );
+    } catch {
+        showNovaPrompt(
+            "File Explorer",
+            "NovaOS could not save the File Explorer changes in this browser."
+        );
+    }
+}
+
+
+function createFileId() {
+    if (
+        window.crypto &&
+        typeof window.crypto.randomUUID === "function"
+    ) {
+        return window.crypto.randomUUID();
+    }
+
+    return `nova-${Date.now()}-${Math.random()
+        .toString(16)
+        .slice(2)}`;
+}
+
+
+function findFileItem(itemId, item = novaFileSystem) {
+    if (item.id === itemId) {
+        return item;
+    }
+
+    if (item.type !== "folder") {
+        return null;
+    }
+
+    for (const child of item.children) {
+        const result = findFileItem(itemId, child);
+
+        if (result) {
+            return result;
+        }
+    }
+
+    return null;
+}
+
+
+function findParentFolder(itemId, folder = novaFileSystem) {
+    if (folder.type !== "folder") {
+        return null;
+    }
+
+    if (
+        folder.children.some(
+            (child) => child.id === itemId
+        )
+    ) {
+        return folder;
+    }
+
+    for (const child of folder.children) {
+        if (child.type === "folder") {
+            const result = findParentFolder(itemId, child);
+
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
+}
+
+
+function getFolderPath(
+    folderId,
+    folder = novaFileSystem,
+    path = []
+) {
+    const nextPath = [...path, folder];
+
+    if (folder.id === folderId) {
+        return nextPath;
+    }
+
+    for (const child of folder.children) {
+        if (child.type === "folder") {
+            const result = getFolderPath(
+                folderId,
+                child,
+                nextPath
+            );
+
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
+}
+
+
+function getCurrentFolder() {
+    const folder = findFileItem(currentFolderId);
+
+    if (!folder || folder.type !== "folder") {
+        currentFolderId = "root";
+        folderHistory = [];
+
+        return novaFileSystem;
+    }
+
+    return folder;
+}
+
+
+function getFileIcon(item) {
+    if (item.type === "folder") {
+        if (item.name.toLowerCase() === "photos") {
+            return "🖼️";
+        }
+
+        if (item.name.toLowerCase() === "games") {
+            return "🎮";
+        }
+
+        if (item.name.toLowerCase() === "saves") {
+            return "💾";
+        }
+
+        return "📁";
+    }
+
+    const extension = item.name.includes(".")
+        ? item.name.split(".").pop().toLowerCase()
+        : "";
+
+    if (
+        ["png", "jpg", "jpeg", "gif", "webp"].includes(
+            extension
+        )
+    ) {
+        return "🖼️";
+    }
+
+    if (
+        ["html", "css", "js", "json"].includes(extension)
+    ) {
+        return "💻";
+    }
+
+    return "📄";
+}
+
+
+function setSelectedFile(itemId) {
+    selectedFileId = itemId;
+
+    document
+        .querySelectorAll(".file-entry")
+        .forEach((entry) => {
+            entry.classList.toggle(
+                "selected",
+                entry.dataset.fileId === itemId
+            );
+        });
+
+    const hasSelection = Boolean(selectedFileId);
+
+    filesRenameButton.disabled = !hasSelection;
+    filesDeleteButton.disabled = !hasSelection;
+    filesDownloadButton.disabled = !hasSelection;
+}
+
+
+function renderFileExplorer() {
+    const folder = getCurrentFolder();
+
+    const items = [...folder.children].sort(
+        (first, second) => {
+            if (first.type !== second.type) {
+                return first.type === "folder" ? -1 : 1;
+            }
+
+            return first.name.localeCompare(second.name);
+        }
+    );
+
+    filesGrid.replaceChildren();
+
+    selectedFileId = null;
+
+    filesRenameButton.disabled = true;
+    filesDeleteButton.disabled = true;
+    filesDownloadButton.disabled = true;
+
+    const path =
+        getFolderPath(folder.id) || [novaFileSystem];
+
+    filesPath.textContent = path
+        .map((part) => part.name)
+        .join("  ›  ");
+
+    filesBackButton.disabled =
+        folderHistory.length === 0;
+
+    items.forEach((item) => {
+        const entry = document.createElement("button");
+        const icon = document.createElement("span");
+        const name = document.createElement("strong");
+        const details = document.createElement("small");
+
+        entry.className = "file-entry";
+        entry.type = "button";
+        entry.dataset.fileId = item.id;
+        entry.title = `Double-click to open ${item.name}`;
+
+        icon.className = "file-entry-icon";
+        icon.setAttribute("aria-hidden", "true");
+        icon.textContent = getFileIcon(item);
+
+        name.textContent = item.name;
+
+        details.textContent =
+            item.type === "folder"
+                ? `${item.children.length} item${
+                      item.children.length === 1
+                          ? ""
+                          : "s"
+                  }`
+                : "Text file";
+
+        entry.append(icon, name, details);
+
+        entry.addEventListener("click", () => {
+            setSelectedFile(item.id);
+        });
+
+        entry.addEventListener("dblclick", () => {
+            openFileItem(item.id);
+        });
+
+        filesGrid.append(entry);
+    });
+
+    document.getElementById("files-empty").hidden =
+        items.length !== 0;
+
+    document.getElementById(
+        "files-status"
+    ).textContent =
+        `${items.length} item${
+            items.length === 1 ? "" : "s"
+        }`;
+}
+
+
+function openFileItem(itemId) {
+    const item = findFileItem(itemId);
+
+    if (!item) {
+        return;
+    }
+
+    if (item.type === "folder") {
+        folderHistory.push(currentFolderId);
+        currentFolderId = item.id;
+
+        closeFileEditor(true);
+        renderFileExplorer();
+
+        return;
+    }
+
+    editingFileId = item.id;
+
+    document.getElementById(
+        "file-editor-name"
+    ).textContent = item.name;
+
+    fileEditorContent.value = item.content || "";
+
+    document.getElementById(
+        "file-editor-status"
+    ).textContent = "Ready";
+
+    fileEditor.hidden = false;
+    fileEditorContent.focus();
+}
+
+
+function closeFileEditor(forceClose = false) {
+    const hasUnsavedChanges =
+        document.getElementById(
+            "file-editor-status"
+        ).textContent === "Unsaved changes";
+
+    if (
+        !forceClose &&
+        !fileEditor.hidden &&
+        hasUnsavedChanges &&
+        !window.confirm(
+            "Close this file without saving your changes?"
+        )
+    ) {
+        return;
+    }
+
+    editingFileId = null;
+    fileEditor.hidden = true;
+}
+
+
+function askForItemName(type, currentName = "") {
+    const label =
+        type === "folder" ? "folder" : "file";
+
+    const answer = window.prompt(
+        currentName
+            ? `Rename this ${label}:`
+            : `Enter a name for the new ${label}:`,
+
+        currentName ||
+            (type === "folder"
+                ? "New folder"
+                : "New file.txt")
+    );
+
+    if (answer === null) {
+        return null;
+    }
+
+    const cleanedName = answer
+        .trim()
+        .replace(/[\\/]/g, "-");
+
+    if (!cleanedName) {
+        showNovaPrompt(
+            "File Explorer",
+            "The name cannot be empty."
+        );
+
+        return null;
+    }
+
+    return cleanedName;
+}
+
+
+function folderHasName(
+    folder,
+    name,
+    ignoredItemId = null
+) {
+    return folder.children.some(
+        (item) =>
+            item.id !== ignoredItemId &&
+            item.name.toLowerCase() ===
+                name.toLowerCase()
+    );
+}
+
+
+function createFileSystemItem(type) {
+    const folder = getCurrentFolder();
+    const name = askForItemName(type);
+
+    if (!name) {
+        return;
+    }
+
+    if (folderHasName(folder, name)) {
+        showNovaPrompt(
+            "File Explorer",
+            `An item named "${name}" already exists in this folder.`
+        );
+
+        return;
+    }
+
+    const newItem = {
+        id: createFileId(),
+        name,
+        type
+    };
+
+    if (type === "folder") {
+        newItem.children = [];
+    } else {
+        newItem.content = "";
+    }
+
+    folder.children.push(newItem);
+
+    saveFileSystem();
+    renderFileExplorer();
+    setSelectedFile(newItem.id);
+
+    if (type === "file") {
+        openFileItem(newItem.id);
+    }
+}
+
+
+function renameSelectedFileItem() {
+    const item = findFileItem(selectedFileId);
+
+    const parent = item
+        ? findParentFolder(item.id)
+        : null;
+
+    if (!item || !parent) {
+        return;
+    }
+
+    const newName = askForItemName(
+        item.type,
+        item.name
+    );
+
+    if (!newName || newName === item.name) {
+        return;
+    }
+
+    if (
+        folderHasName(
+            parent,
+            newName,
+            item.id
+        )
+    ) {
+        showNovaPrompt(
+            "File Explorer",
+            `An item named "${newName}" already exists in this folder.`
+        );
+
+        return;
+    }
+
+    item.name = newName;
+
+    saveFileSystem();
+    renderFileExplorer();
+    setSelectedFile(item.id);
+}
+
+
+function deleteSelectedFileItem() {
+    const item = findFileItem(selectedFileId);
+
+    const parent = item
+        ? findParentFolder(item.id)
+        : null;
+
+    if (!item || !parent) {
+        return;
+    }
+
+    const extraWarning =
+        item.type === "folder" &&
+        item.children.length
+            ? " Everything inside it will also be deleted."
+            : "";
+
+    if (
+        !window.confirm(
+            `Delete "${item.name}"?${extraWarning}`
+        )
+    ) {
+        return;
+    }
+
+    parent.children = parent.children.filter(
+        (child) => child.id !== item.id
+    );
+
+    if (editingFileId === item.id) {
+        closeFileEditor(true);
+    }
+
+    saveFileSystem();
+    renderFileExplorer();
+}
+
+
+function makeAvailableFileName(
+    folder,
+    requestedName
+) {
+    if (!folderHasName(folder, requestedName)) {
+        return requestedName;
+    }
+
+    const dotIndex = requestedName.lastIndexOf(".");
+    const hasExtension = dotIndex > 0;
+
+    const baseName = hasExtension
+        ? requestedName.slice(0, dotIndex)
+        : requestedName;
+
+    const extension = hasExtension
+        ? requestedName.slice(dotIndex)
+        : "";
+
+    let copyNumber = 2;
+
+    let availableName =
+        `${baseName} (${copyNumber})${extension}`;
+
+    while (
+        folderHasName(folder, availableName)
+    ) {
+        copyNumber += 1;
+
+        availableName =
+            `${baseName} (${copyNumber})${extension}`;
+    }
+
+    return availableName;
+}
+
+
+/* SAVE REAL FILES TO THE COMPUTER */
+
+function downloadWithLink(
+    fileName,
+    contents,
+    mimeType = "text/plain"
+) {
+    const blob = new Blob(
+        [contents],
+        {
+            type: `${mimeType};charset=utf-8`
+        }
+    );
+
+    const objectUrl =
+        URL.createObjectURL(blob);
+
+    const downloadLink =
+        document.createElement("a");
+
+    downloadLink.href = objectUrl;
+    downloadLink.download = fileName;
+    downloadLink.click();
+
+    window.setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+    }, 1000);
+}
+
+
+async function saveSelectedItemToComputer() {
+    const item = findFileItem(selectedFileId);
+
+    if (!item) {
+        return;
+    }
+
+    const isFolder = item.type === "folder";
+
+    const fileName = isFolder
+        ? `${item.name}.nova.json`
+        : item.name;
+
+    const contents = isFolder
+        ? JSON.stringify(item, null, 2)
+        : item.content || "";
+
+    const mimeType =
+        isFolder ||
+        fileName.toLowerCase().endsWith(".json")
+            ? "application/json"
+            : "text/plain";
+
+    if (
+        typeof window.showSaveFilePicker ===
+        "function"
+    ) {
+        try {
+            const handle =
+                await window.showSaveFilePicker({
+                    suggestedName: fileName
+                });
+
+            const writable =
+                await handle.createWritable();
+
+            await writable.write(contents);
+            await writable.close();
+
+            document.getElementById(
+                "files-status"
+            ).textContent =
+                `Saved ${fileName} to your computer`;
+
+            return;
+        } catch (error) {
+            if (
+                error &&
+                error.name === "AbortError"
+            ) {
+                return;
+            }
+        }
+    }
+
+    downloadWithLink(
+        fileName,
+        contents,
+        mimeType
+    );
+
+    document.getElementById(
+        "files-status"
+    ).textContent =
+        `Downloaded ${fileName}`;
+}
+
+
+/* IMPORT REAL FILES */
+
+async function importRealFiles(fileList) {
+    const folder = getCurrentFolder();
+    const importedItems = [];
+
+    for (const realFile of fileList) {
+        try {
+            const contents =
+                await realFile.text();
+
+            const importedItem = {
+                id: createFileId(),
+
+                name: makeAvailableFileName(
+                    folder,
+                    realFile.name
+                ),
+
+                type: "file",
+                content: contents
+            };
+
+            folder.children.push(importedItem);
+            importedItems.push(importedItem);
+        } catch {
+            showNovaPrompt(
+                "Import failed",
+                `${realFile.name} could not be imported.`
+            );
+        }
+    }
+
+    filesImportInput.value = "";
+
+    if (!importedItems.length) {
+        return;
+    }
+
+    saveFileSystem();
+    renderFileExplorer();
+
+    setSelectedFile(
+        importedItems[
+            importedItems.length - 1
+        ].id
+    );
+
+    document.getElementById(
+        "files-status"
+    ).textContent =
+        `Imported ${importedItems.length} file${
+            importedItems.length === 1 ? "" : "s"
+        }`;
+}
+
+
+/* APP AND GAME SAVE API */
+
+function getOrCreateSaveFolder(
+    folderName = "Saves"
+) {
+    let saveFolder =
+        novaFileSystem.children.find(
+            (item) =>
+                item.type === "folder" &&
+                item.name.toLowerCase() ===
+                    folderName.toLowerCase()
+        );
+
+    if (!saveFolder) {
+        saveFolder = {
+            id: createFileId(),
+            name: folderName,
+            type: "folder",
+            children: []
+        };
+
+        novaFileSystem.children.push(saveFolder);
+    }
+
+    return saveFolder;
+}
+
+
+function saveAppProgress(
+    fileName,
+    data,
+    folderName = "Saves"
+) {
+    const saveFolder =
+        getOrCreateSaveFolder(folderName);
+
+    const contents =
+        typeof data === "string"
+            ? data
+            : JSON.stringify(data, null, 2);
+
+    let saveFile =
+        saveFolder.children.find(
+            (item) =>
+                item.type === "file" &&
+                item.name.toLowerCase() ===
+                    fileName.toLowerCase()
+        );
+
+    if (saveFile) {
+        saveFile.content = contents;
+    } else {
+        saveFile = {
+            id: createFileId(),
+            name: fileName,
+            type: "file",
+            content: contents
+        };
+
+        saveFolder.children.push(saveFile);
+    }
+
+    saveFileSystem();
+
+    if (
+        currentFolderId === saveFolder.id ||
+        currentFolderId === "root"
+    ) {
+        renderFileExplorer();
+    }
+
+    return saveFile.id;
+}
+
+
+function loadAppProgress(
+    fileName,
+    folderName = "Saves"
+) {
+    const saveFolder =
+        novaFileSystem.children.find(
+            (item) =>
+                item.type === "folder" &&
+                item.name.toLowerCase() ===
+                    folderName.toLowerCase()
+        );
+
+    const saveFile =
+        saveFolder?.children.find(
+            (item) =>
+                item.type === "file" &&
+                item.name.toLowerCase() ===
+                    fileName.toLowerCase()
+        );
+
+    if (!saveFile) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(saveFile.content);
+    } catch {
+        return saveFile.content;
+    }
+}
+
+
+/*
+    Future NovaOS apps can save progress with:
+
+    NovaFS.save("game-save.json", {
+        level: 5,
+        coins: 250
+    });
+
+    They can load progress with:
+
+    const progress =
+        NovaFS.load("game-save.json");
+*/
+
+window.NovaFS = {
+    save: saveAppProgress,
+    load: loadAppProgress,
+
+    download(
+        fileName,
+        folderName = "Saves"
+    ) {
+        const saveFolder =
+            novaFileSystem.children.find(
+                (item) =>
+                    item.type === "folder" &&
+                    item.name.toLowerCase() ===
+                        folderName.toLowerCase()
+            );
+
+        const saveFile =
+            saveFolder?.children.find(
+                (item) =>
+                    item.type === "file" &&
+                    item.name.toLowerCase() ===
+                        fileName.toLowerCase()
+            );
+
+        if (!saveFile) {
+            return false;
+        }
+
+        downloadWithLink(
+            saveFile.name,
+            saveFile.content || ""
+        );
+
+        return true;
+    }
+};
+
+
+/* FILE EXPLORER BUTTONS */
+
+filesBackButton.addEventListener(
+    "click",
+    () => {
+        const previousFolderId =
+            folderHistory.pop();
+
+        if (previousFolderId) {
+            currentFolderId =
+                previousFolderId;
+
+            closeFileEditor(true);
+            renderFileExplorer();
+        }
+    }
+);
+
+
+document
+    .getElementById("files-new-file")
+    .addEventListener("click", () => {
+        createFileSystemItem("file");
+    });
+
+
+document
+    .getElementById("files-new-folder")
+    .addEventListener("click", () => {
+        createFileSystemItem("folder");
+    });
+
+
+document
+    .getElementById("files-import")
+    .addEventListener("click", () => {
+        filesImportInput.click();
+    });
+
+
+filesImportInput.addEventListener(
+    "change",
+    () => {
+        importRealFiles(
+            [...filesImportInput.files]
+        );
+    }
+);
+
+
+filesDownloadButton.addEventListener(
+    "click",
+    saveSelectedItemToComputer
+);
+
+
+filesRenameButton.addEventListener(
+    "click",
+    renameSelectedFileItem
+);
+
+
+filesDeleteButton.addEventListener(
+    "click",
+    deleteSelectedFileItem
+);
+
+
+document
+    .getElementById("file-editor-close")
+    .addEventListener("click", () => {
+        closeFileEditor();
+    });
+
+
+fileEditorContent.addEventListener(
+    "input",
+    () => {
+        document.getElementById(
+            "file-editor-status"
+        ).textContent = "Unsaved changes";
+    }
+);
+
+
+document
+    .getElementById("file-editor-save")
+    .addEventListener("click", () => {
+        const file =
+            findFileItem(editingFileId);
+
+        if (
+            !file ||
+            file.type !== "file"
+        ) {
+            return;
+        }
+
+        file.content =
+            fileEditorContent.value;
+
+        saveFileSystem();
+
+        document.getElementById(
+            "file-editor-status"
+        ).textContent = "Saved";
+    });
+
+
+filesGrid.addEventListener(
+    "click",
+    (event) => {
+        if (event.target === filesGrid) {
+            setSelectedFile(null);
+        }
+    }
+);
+
+
+renderFileExplorer();
+
+
+/* WALLPAPERS */
+
 const wallpapers = [
     {
         name: "Nova",
+
         background:
             "radial-gradient(circle at 18% 20%, rgba(255,255,255,.23), transparent 24%), linear-gradient(135deg, #2563eb, #7c3aed)"
     },
+
     {
         name: "Sunset",
+
         background:
             "radial-gradient(circle at 75% 20%, rgba(253,224,71,.35), transparent 25%), linear-gradient(135deg, #f97316, #db2777 55%, #6d28d9)"
     },
+
     {
         name: "Aurora",
+
         background:
             "radial-gradient(circle at 30% 25%, rgba(52,211,153,.75), transparent 24%), radial-gradient(circle at 75% 75%, rgba(45,212,191,.32), transparent 30%), linear-gradient(145deg, #042f2e, #0f172a)"
     },
+
     {
         name: "Deep Space",
+
         background:
             "radial-gradient(circle at 20% 25%, #818cf8 0 2px, transparent 3px), radial-gradient(circle at 70% 35%, #fff 0 1px, transparent 2px), radial-gradient(circle at 80% 75%, #c4b5fd 0 2px, transparent 3px), linear-gradient(145deg, #020617, #172554)"
     }
 ];
 
-/* Boot screen */
+
+/* BOOT */
 
 window.addEventListener("load", () => {
-    const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
+    const reducedMotion =
+        window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
 
     const delay = reducedMotion ? 250 : 2500;
 
     window.setTimeout(() => {
         bootScreen.style.display = "none";
         loginScreen.style.display = "flex";
-        document.getElementById("username").focus();
+
+        document
+            .getElementById("username")
+            .focus();
     }, delay);
 });
 
-/* Login */
 
-loginForm.addEventListener("submit", (event) => {
-    event.preventDefault();
+/* LOGIN */
 
-    const username = document
-        .getElementById("username")
-        .value
-        .trim();
+loginForm.addEventListener(
+    "submit",
+    (event) => {
+        event.preventDefault();
 
-    const passwordInput =
-        document.getElementById("password");
+        const username =
+            document
+                .getElementById("username")
+                .value.trim();
 
-    if (!username || !passwordInput.value) {
-        loginError.textContent =
-            "Enter both a username and password.";
+        const passwordInput =
+            document.getElementById("password");
 
-        return;
+        if (
+            !username ||
+            !passwordInput.value
+        ) {
+            loginError.textContent =
+                "Enter both a username and password.";
+
+            return;
+        }
+
+        loginError.textContent = "";
+        passwordInput.value = "";
+
+        document.getElementById(
+            "start-username"
+        ).textContent = username;
+
+        loginScreen.style.display = "none";
+        desktop.style.display = "block";
     }
+);
 
-    loginError.textContent = "";
-    passwordInput.value = "";
 
-    document.getElementById(
-        "start-username"
-    ).textContent = username;
-
-    loginScreen.style.display = "none";
-    desktop.style.display = "block";
-});
-
-/* App windows */
+/* WINDOWS */
 
 function bringToFront(appWindow) {
     windowLayer += 1;
     appWindow.style.zIndex = windowLayer;
 }
 
+
 function openApp(appId) {
-    const appWindow = document.getElementById(appId);
+    const appWindow =
+        document.getElementById(appId);
 
     if (!appWindow) {
         return;
     }
 
-    if (appWindow.style.display !== "block") {
-        const offset = (openedWindowCount % 5) * 28;
+    if (
+        appWindow.style.display !== "block"
+    ) {
+        const offset =
+            (openedWindowCount % 5) * 28;
 
         appWindow.style.left =
             `${Math.min(
@@ -130,34 +1208,43 @@ function openApp(appId) {
     closeStartMenu();
 }
 
+
 function closeApp(appId) {
-    const appWindow = document.getElementById(appId);
+    const appWindow =
+        document.getElementById(appId);
 
     if (appWindow) {
         appWindow.style.display = "none";
     }
 }
 
+
 function getOpenWindows() {
-    return [...document.querySelectorAll(".window")]
-        .filter((appWindow) => {
-            return appWindow.style.display === "block";
-        })
-        .sort((firstWindow, secondWindow) => {
-            return (
-                Number(secondWindow.style.zIndex) -
-                Number(firstWindow.style.zIndex)
-            );
-        });
+    return [
+        ...document.querySelectorAll(".window")
+    ]
+        .filter(
+            (appWindow) =>
+                appWindow.style.display ===
+                "block"
+        )
+        .sort(
+            (a, b) =>
+                Number(b.style.zIndex) -
+                Number(a.style.zIndex)
+        );
 }
 
+
 function closeActiveWindow() {
-    const activeWindow = getOpenWindows()[0];
+    const activeWindow =
+        getOpenWindows()[0];
 
     if (activeWindow) {
         activeWindow.style.display = "none";
     }
 }
+
 
 function showNovaPrompt(title, message) {
     document.getElementById(
@@ -175,18 +1262,24 @@ function showNovaPrompt(title, message) {
     openApp("system-prompt");
 }
 
-/* Start menu */
+
+/* START MENU */
 
 function closeStartMenu() {
     startMenu.classList.remove("open");
 }
 
+
 function toggleStartMenu() {
     closeTopMenus();
+
     startMenu.classList.toggle("open");
 
-    if (startMenu.classList.contains("open")) {
+    if (
+        startMenu.classList.contains("open")
+    ) {
         startSearch.value = "";
+
         filterStartApps();
 
         window.setTimeout(() => {
@@ -195,10 +1288,12 @@ function toggleStartMenu() {
     }
 }
 
+
 function openAppFromStart(appId) {
     closeStartMenu();
     openApp(appId);
 }
+
 
 function lockNovaOS() {
     closeStartMenu();
@@ -213,21 +1308,32 @@ function lockNovaOS() {
     desktop.style.display = "none";
     loginScreen.style.display = "flex";
 
-    document.getElementById("password").value = "";
-    document.getElementById("password").focus();
+    document.getElementById(
+        "password"
+    ).value = "";
+
+    document.getElementById(
+        "password"
+    ).focus();
 }
 
-/* Bring clicked windows to the front */
 
-document.addEventListener("pointerdown", (event) => {
-    const appWindow = event.target.closest(".window");
+/* WINDOW FOCUS */
 
-    if (appWindow) {
-        bringToFront(appWindow);
+document.addEventListener(
+    "pointerdown",
+    (event) => {
+        const appWindow =
+            event.target.closest(".window");
+
+        if (appWindow) {
+            bringToFront(appWindow);
+        }
     }
-});
+);
 
-/* Draggable windows */
+
+/* WINDOW DRAGGING */
 
 document
     .querySelectorAll(".window")
@@ -279,7 +1385,7 @@ document
                 const maxLeft = Math.max(
                     0,
                     window.innerWidth -
-                    appWindow.offsetWidth
+                        appWindow.offsetWidth
                 );
 
                 const maxTop = Math.max(
@@ -290,7 +1396,8 @@ document
                 const nextLeft = Math.min(
                     Math.max(
                         0,
-                        event.clientX - dragOffsetX
+                        event.clientX -
+                            dragOffsetX
                     ),
                     maxLeft
                 );
@@ -298,7 +1405,8 @@ document
                 const nextTop = Math.min(
                     Math.max(
                         34,
-                        event.clientY - dragOffsetY
+                        event.clientY -
+                            dragOffsetY
                     ),
                     maxTop
                 );
@@ -312,55 +1420,58 @@ document
         );
     });
 
-/* Browser search */
 
-browserForm.addEventListener("submit", (event) => {
-    event.preventDefault();
+/* NOVA BROWSER */
 
-    const query = browserSearch.value.trim();
+browserForm.addEventListener(
+    "submit",
+    (event) => {
+        event.preventDefault();
 
-    if (!query) {
-        browserSearch.focus();
-        return;
-    }
+        const query =
+            browserSearch.value.trim();
 
-    const looksLikeUrl =
-        query.includes(".") &&
-        !query.includes(" ");
+        if (!query) {
+            browserSearch.focus();
+            return;
+        }
 
-    const target = looksLikeUrl
-        ? (
-            /^https?:\/\//i.test(query)
+        const looksLikeUrl =
+            query.includes(".") &&
+            !query.includes(" ");
+
+        const target = looksLikeUrl
+            ? /^https?:\/\//i.test(query)
                 ? query
                 : `https://${query}`
-        )
-        : (
-            `https://www.google.com/search?q=` +
-            encodeURIComponent(query)
+            : `https://www.google.com/search?q=${encodeURIComponent(
+                  query
+              )}`;
+
+        window.open(
+            target,
+            "_blank",
+            "noopener,noreferrer"
         );
+    }
+);
 
-    window.open(
-        target,
-        "_blank",
-        "noopener,noreferrer"
-    );
-});
 
-/* Nova Store */
+/* APP STORE */
 
 function saveInstalledApps() {
     try {
         localStorage.setItem(
             "novaInstalledApps",
-            JSON.stringify([...installedApps])
+            JSON.stringify([
+                ...installedApps
+            ])
         );
     } catch {
-        /*
-        NovaOS still works when browser
-        storage is unavailable.
-        */
+        // NovaOS still works without browser storage.
     }
 }
+
 
 function syncInstalledApps() {
     document
@@ -384,13 +1495,15 @@ function syncInstalledApps() {
     document
         .querySelectorAll("[data-installed-app]")
         .forEach((button) => {
-            button.hidden = !installedApps.has(
-                button.dataset.installedApp
-            );
+            button.hidden =
+                !installedApps.has(
+                    button.dataset.installedApp
+                );
         });
 
     filterStartApps();
 }
+
 
 function installOrOpenApp(appId) {
     if (installedApps.has(appId)) {
@@ -415,6 +1528,7 @@ function installOrOpenApp(appId) {
     );
 }
 
+
 function openInstalledApp(appId) {
     if (installedApps.has(appId)) {
         openAppFromStart(appId);
@@ -423,21 +1537,28 @@ function openInstalledApp(appId) {
     }
 }
 
+
 document
     .querySelectorAll("[data-install-app]")
     .forEach((button) => {
-        button.addEventListener("click", () => {
-            installOrOpenApp(
-                button.dataset.installApp
-            );
-        });
+        button.addEventListener(
+            "click",
+            () => {
+                installOrOpenApp(
+                    button.dataset.installApp
+                );
+            }
+        );
     });
 
-/* Start-menu search */
+
+/* START MENU SEARCH */
 
 function filterStartApps() {
     const query =
-        startSearch.value.trim().toLowerCase();
+        startSearch.value
+            .trim()
+            .toLowerCase();
 
     let visibleApps = 0;
 
@@ -449,10 +1570,14 @@ function filterStartApps() {
 
             const isAvailable =
                 !requiredInstall ||
-                installedApps.has(requiredInstall);
+                installedApps.has(
+                    requiredInstall
+                );
 
             const matches =
-                button.dataset.startName.includes(query);
+                button.dataset.startName.includes(
+                    query
+                );
 
             const shouldShow =
                 isAvailable && matches;
@@ -469,60 +1594,73 @@ function filterStartApps() {
     ).hidden = visibleApps !== 0;
 }
 
+
 startSearch.addEventListener(
     "input",
     filterStartApps
 );
 
-/* Store search */
 
-storeSearch.addEventListener("input", () => {
-    const query =
-        storeSearch.value.trim().toLowerCase();
+/* STORE SEARCH */
 
-    let visibleApps = 0;
-    let visibleAvailableApps = 0;
-    let visibleSoonApps = 0;
+storeSearch.addEventListener(
+    "input",
+    () => {
+        const query =
+            storeSearch.value
+                .trim()
+                .toLowerCase();
 
-    document
-        .querySelectorAll(
-            ".store-card, .soon-card"
-        )
-        .forEach((card) => {
-            const matches =
-                card.dataset.storeName.includes(query);
+        let visibleApps = 0;
+        let visibleAvailableApps = 0;
+        let visibleSoonApps = 0;
 
-            card.hidden = !matches;
+        document
+            .querySelectorAll(
+                ".store-card, .soon-card"
+            )
+            .forEach((card) => {
+                const matches =
+                    card.dataset.storeName.includes(
+                        query
+                    );
 
-            if (matches) {
-                visibleApps += 1;
+                card.hidden = !matches;
 
-                if (
-                    card.classList.contains(
-                        "store-card"
-                    )
-                ) {
-                    visibleAvailableApps += 1;
-                } else {
-                    visibleSoonApps += 1;
+                if (matches) {
+                    visibleApps += 1;
+
+                    if (
+                        card.classList.contains(
+                            "store-card"
+                        )
+                    ) {
+                        visibleAvailableApps += 1;
+                    } else {
+                        visibleSoonApps += 1;
+                    }
                 }
-            }
-        });
+            });
 
-    document.querySelector(
-        ".store-section-title"
-    ).hidden = visibleAvailableApps === 0;
+        document.querySelector(
+            ".store-section-title"
+        ).hidden =
+            visibleAvailableApps === 0;
 
-    document.querySelector(
-        ".soon-section"
-    ).hidden = visibleSoonApps === 0;
+        document.querySelector(
+            ".soon-section"
+        ).hidden =
+            visibleSoonApps === 0;
 
-    document.getElementById(
-        "store-empty"
-    ).hidden = visibleApps !== 0;
-});
+        document.getElementById(
+            "store-empty"
+        ).hidden =
+            visibleApps !== 0;
+    }
+);
 
-/* Restore installed apps */
+
+/* LOAD INSTALLED APPS */
 
 try {
     const savedApps = JSON.parse(
@@ -542,7 +1680,8 @@ try {
 
 syncInstalledApps();
 
-/* Nova Notes */
+
+/* NOTES */
 
 try {
     notesTextarea.value =
@@ -551,34 +1690,44 @@ try {
     notesTextarea.value = "";
 }
 
-notesTextarea.addEventListener("input", () => {
-    const status =
-        document.getElementById("notes-status");
 
-    status.textContent = "Saving…";
-
-    window.clearTimeout(notesSaveTimer);
-
-    notesSaveTimer = window.setTimeout(() => {
-        try {
-            localStorage.setItem(
-                "novaNotes",
-                notesTextarea.value
+notesTextarea.addEventListener(
+    "input",
+    () => {
+        const status =
+            document.getElementById(
+                "notes-status"
             );
 
-            status.textContent = "Saved";
-        } catch {
-            status.textContent = "Could not save";
-        }
-    }, 350);
-});
+        status.textContent = "Saving…";
 
-/* Nova Paint */
+        window.clearTimeout(notesSaveTimer);
+
+        notesSaveTimer =
+            window.setTimeout(() => {
+                try {
+                    localStorage.setItem(
+                        "novaNotes",
+                        notesTextarea.value
+                    );
+
+                    status.textContent = "Saved";
+                } catch {
+                    status.textContent =
+                        "Could not save";
+                }
+            }, 350);
+    }
+);
+
+
+/* PAINT */
 
 const paintContext =
     paintCanvas.getContext("2d");
 
 let isPainting = false;
+
 
 function resetPaintCanvas() {
     paintContext.save();
@@ -595,6 +1744,7 @@ function resetPaintCanvas() {
     paintContext.restore();
 }
 
+
 function getPaintPoint(event) {
     const bounds =
         paintCanvas.getBoundingClientRect();
@@ -610,6 +1760,7 @@ function getPaintPoint(event) {
     };
 }
 
+
 paintCanvas.addEventListener(
     "pointerdown",
     (event) => {
@@ -619,7 +1770,8 @@ paintCanvas.addEventListener(
             event.pointerId
         );
 
-        const point = getPaintPoint(event);
+        const point =
+            getPaintPoint(event);
 
         paintContext.fillStyle =
             paintColour.value;
@@ -644,6 +1796,7 @@ paintCanvas.addEventListener(
     }
 );
 
+
 paintCanvas.addEventListener(
     "pointermove",
     (event) => {
@@ -651,7 +1804,8 @@ paintCanvas.addEventListener(
             return;
         }
 
-        const point = getPaintPoint(event);
+        const point =
+            getPaintPoint(event);
 
         paintContext.lineTo(
             point.x,
@@ -666,14 +1820,17 @@ paintCanvas.addEventListener(
 
         paintContext.lineCap = "round";
         paintContext.lineJoin = "round";
+
         paintContext.stroke();
     }
 );
+
 
 function stopPainting() {
     isPainting = false;
     paintContext.closePath();
 }
+
 
 paintCanvas.addEventListener(
     "pointerup",
@@ -685,159 +1842,177 @@ paintCanvas.addEventListener(
     stopPainting
 );
 
-document.getElementById(
-    "paint-clear"
-).addEventListener(
-    "click",
-    resetPaintCanvas
-);
 
-document.getElementById(
-    "paint-save"
-).addEventListener("click", () => {
-    const downloadLink =
-        document.createElement("a");
+document
+    .getElementById("paint-clear")
+    .addEventListener(
+        "click",
+        resetPaintCanvas
+    );
 
-    downloadLink.download =
-        "nova-paint.png";
 
-    downloadLink.href =
-        paintCanvas.toDataURL("image/png");
+document
+    .getElementById("paint-save")
+    .addEventListener("click", () => {
+        const downloadLink =
+            document.createElement("a");
 
-    downloadLink.click();
-});
+        downloadLink.download =
+            "nova-paint.png";
+
+        downloadLink.href =
+            paintCanvas.toDataURL(
+                "image/png"
+            );
+
+        downloadLink.click();
+    });
+
 
 resetPaintCanvas();
 
-/* Calculator */
+
+/* CALCULATOR */
 
 function updateCalculatorDisplay(value) {
     calculatorDisplay.value =
         value
             .replaceAll("*", "×")
-            .replaceAll("/", "÷") ||
-        "0";
+            .replaceAll("/", "÷") || "0";
 }
+
 
 document
     .querySelectorAll(
         "[data-calculator-value]"
     )
     .forEach((button) => {
-        button.addEventListener("click", () => {
-            if (
-                calculatorDisplay.value === "Error"
-            ) {
-                calculatorExpression = "";
+        button.addEventListener(
+            "click",
+            () => {
+                if (
+                    calculatorDisplay.value ===
+                    "Error"
+                ) {
+                    calculatorExpression = "";
+                }
+
+                calculatorExpression +=
+                    button.dataset.calculatorValue;
+
+                updateCalculatorDisplay(
+                    calculatorExpression
+                );
             }
-
-            calculatorExpression +=
-                button.dataset.calculatorValue;
-
-            updateCalculatorDisplay(
-                calculatorExpression
-            );
-        });
+        );
     });
+
 
 document
     .querySelectorAll(
         "[data-calculator-action]"
     )
     .forEach((button) => {
-        button.addEventListener("click", () => {
-            const action =
-                button.dataset.calculatorAction;
+        button.addEventListener(
+            "click",
+            () => {
+                const action =
+                    button.dataset.calculatorAction;
 
-            if (action === "clear") {
-                calculatorExpression = "";
+                if (action === "clear") {
+                    calculatorExpression = "";
 
-                updateCalculatorDisplay(
-                    calculatorExpression
-                );
-
-                return;
-            }
-
-            if (action === "delete") {
-                calculatorExpression =
-                    calculatorExpression.slice(0, -1);
-
-                updateCalculatorDisplay(
-                    calculatorExpression
-                );
-
-                return;
-            }
-
-            if (action === "equals") {
-                const isSafeExpression =
-                    /^[0-9+\-*/.() ]+$/.test(
+                    updateCalculatorDisplay(
                         calculatorExpression
                     );
-
-                if (
-                    !isSafeExpression ||
-                    !calculatorExpression
-                ) {
-                    calculatorDisplay.value =
-                        "Error";
-
-                    calculatorExpression = "";
 
                     return;
                 }
 
-                try {
-                    const result = Function(
-                        `"use strict"; return (` +
-                        `${calculatorExpression})`
-                    )();
-
-                    if (!Number.isFinite(result)) {
-                        throw new Error(
-                            "Invalid result"
-                        );
-                    }
-
+                if (action === "delete") {
                     calculatorExpression =
-                        String(
-                            Number(
-                                result.toFixed(10)
-                            )
+                        calculatorExpression.slice(
+                            0,
+                            -1
                         );
 
                     updateCalculatorDisplay(
                         calculatorExpression
                     );
-                } catch {
-                    calculatorDisplay.value =
-                        "Error";
 
-                    calculatorExpression = "";
+                    return;
+                }
+
+                if (action === "equals") {
+                    const isSafeExpression =
+                        /^[0-9+\-*/.() ]+$/.test(
+                            calculatorExpression
+                        );
+
+                    if (
+                        !isSafeExpression ||
+                        !calculatorExpression
+                    ) {
+                        calculatorDisplay.value =
+                            "Error";
+
+                        calculatorExpression = "";
+
+                        return;
+                    }
+
+                    try {
+                        const result = Function(
+                            `"use strict"; return (${calculatorExpression})`
+                        )();
+
+                        if (
+                            !Number.isFinite(result)
+                        ) {
+                            throw new Error(
+                                "Invalid result"
+                            );
+                        }
+
+                        calculatorExpression =
+                            String(
+                                Number(
+                                    result.toFixed(10)
+                                )
+                            );
+
+                        updateCalculatorDisplay(
+                            calculatorExpression
+                        );
+                    } catch {
+                        calculatorDisplay.value =
+                            "Error";
+
+                        calculatorExpression = "";
+                    }
                 }
             }
-        });
+        );
     });
 
-/* Clock */
+
+/* CLOCK */
 
 function updateClock() {
     const now = new Date();
 
     document.getElementById(
         "clock"
-    ).textContent = now.toLocaleString([], {
-        weekday: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    ).textContent =
+        now.toLocaleString([], {
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
 }
 
-window.setInterval(updateClock, 1000);
-updateClock();
 
-/* Wallpaper */
+/* WALLPAPER */
 
 function changeWallpaper(index) {
     const selected = wallpapers[index];
@@ -860,12 +2035,14 @@ function changeWallpaper(index) {
 
     document
         .querySelectorAll(".wallpaper")
-        .forEach((button, buttonIndex) => {
-            button.classList.toggle(
-                "selected",
-                buttonIndex === index
-            );
-        });
+        .forEach(
+            (button, buttonIndex) => {
+                button.classList.toggle(
+                    "selected",
+                    buttonIndex === index
+                );
+            }
+        );
 
     try {
         localStorage.setItem(
@@ -873,33 +2050,12 @@ function changeWallpaper(index) {
             String(index)
         );
     } catch {
-        /*
-        NovaOS still works when browser
-        storage is unavailable.
-        */
+        // NovaOS still works without browser storage.
     }
 }
 
-/* Restore wallpaper */
 
-try {
-    const savedWallpaper = Number(
-        localStorage.getItem("novaWallpaper")
-    );
-
-    if (
-        Number.isInteger(savedWallpaper) &&
-        wallpapers[savedWallpaper]
-    ) {
-        changeWallpaper(savedWallpaper);
-    } else {
-        changeWallpaper(0);
-    }
-} catch {
-    changeWallpaper(0);
-}
-
-/* Top menus */
+/* TOP MENUS */
 
 function closeTopMenus() {
     document
@@ -907,14 +2063,15 @@ function closeTopMenus() {
         .forEach((menu) => {
             menu.classList.remove("open");
 
-            menu
-                .querySelector(".menu-button")
-                .setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
+            menu.querySelector(
+                ".menu-button"
+            ).setAttribute(
+                "aria-expanded",
+                "false"
+            );
         });
 }
+
 
 document
     .querySelectorAll(".menu-button")
@@ -947,7 +2104,6 @@ document
         );
     });
 
-/* Remember the most recent input */
 
 document.addEventListener(
     "focusin",
@@ -956,12 +2112,12 @@ document.addEventListener(
             event.target instanceof
             HTMLInputElement
         ) {
-            lastFocusedInput = event.target;
+            lastFocusedInput =
+                event.target;
         }
     }
 );
 
-/* Top-menu actions */
 
 document
     .querySelectorAll(
@@ -996,10 +2152,13 @@ document
                     closeActiveWindow();
                 }
 
-                if (action === "next-wallpaper") {
+                if (
+                    action === "next-wallpaper"
+                ) {
                     changeWallpaper(
                         (
-                            currentWallpaperIndex + 1
+                            currentWallpaperIndex +
+                            1
                         ) % wallpapers.length
                     );
                 }
@@ -1021,14 +2180,14 @@ document
                     } else {
                         showNovaPrompt(
                             "Edit",
-                            "Click inside a text " +
-                            "field first, then " +
-                            "choose Select All."
+                            "Click inside a text field first, then choose Select All."
                         );
                     }
                 }
 
-                if (action === "clear-field") {
+                if (
+                    action === "clear-field"
+                ) {
                     const activeField =
                         lastFocusedInput;
 
@@ -1041,9 +2200,7 @@ document
                     } else {
                         showNovaPrompt(
                             "Edit",
-                            "Click inside a text " +
-                            "field first, then " +
-                            "choose Clear Field."
+                            "Click inside a text field first, then choose Clear Field."
                         );
                     }
                 }
@@ -1053,19 +2210,14 @@ document
                         if (
                             document.fullscreenElement
                         ) {
-                            await document
-                                .exitFullscreen();
+                            await document.exitFullscreen();
                         } else {
-                            await document
-                                .documentElement
-                                .requestFullscreen();
+                            await document.documentElement.requestFullscreen();
                         }
                     } catch {
                         showNovaPrompt(
                             "Full Screen",
-                            "Your browser did not " +
-                            "allow NovaOS to enter " +
-                            "full screen."
+                            "Your browser did not allow NovaOS to enter full screen."
                         );
                     }
                 }
@@ -1073,58 +2225,96 @@ document
                 if (action === "shortcuts") {
                     showNovaPrompt(
                         "Keyboard Shortcuts",
-                        "Esc — close the active " +
-                        "window\nCtrl+A — select " +
-                        "text\nEnter — submit login " +
-                        "or browser search"
+                        "Esc — close the active window\n" +
+                            "Ctrl+A — select text\n" +
+                            "Enter — submit login or browser search"
                     );
                 }
 
                 if (action === "about") {
                     showNovaPrompt(
                         "About NovaOS",
-                        "NovaOS is a browser-based " +
-                        "desktop experience built " +
-                        "with HTML, CSS, and " +
-                        "JavaScript."
+                        "NovaOS is a browser-based desktop experience built with HTML, CSS, and JavaScript."
                     );
                 }
             }
         );
     });
 
-/* Close menus when clicking outside */
 
-document.addEventListener("click", (event) => {
-    if (!event.target.closest(".top-menu")) {
-        closeTopMenus();
+/* CLOSE MENUS */
+
+document.addEventListener(
+    "click",
+    (event) => {
+        if (
+            !event.target.closest(".top-menu")
+        ) {
+            closeTopMenus();
+        }
+
+        if (
+            !event.target.closest(
+                "#start-menu"
+            ) &&
+            !event.target.closest(
+                ".start-button"
+            )
+        ) {
+            closeStartMenu();
+        }
     }
+);
+
+
+/* LOAD SAVED WALLPAPER */
+
+try {
+    const savedWallpaper = Number(
+        localStorage.getItem("novaWallpaper")
+    );
 
     if (
-        !event.target.closest("#start-menu") &&
-        !event.target.closest(".start-button")
+        Number.isInteger(savedWallpaper) &&
+        wallpapers[savedWallpaper]
     ) {
-        closeStartMenu();
-    }
-});
-
-/* Escape key */
-
-document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") {
-        return;
-    }
-
-    const openMenu =
-        document.querySelector(".top-menu.open");
-
-    if (openMenu) {
-        closeTopMenus();
-    } else if (
-        startMenu.classList.contains("open")
-    ) {
-        closeStartMenu();
+        changeWallpaper(savedWallpaper);
     } else {
-        closeActiveWindow();
+        changeWallpaper(0);
     }
-});
+} catch {
+    changeWallpaper(0);
+}
+
+
+/* ESCAPE KEY */
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+        if (event.key !== "Escape") {
+            return;
+        }
+
+        const openMenu =
+            document.querySelector(
+                ".top-menu.open"
+            );
+
+        if (openMenu) {
+            closeTopMenus();
+        } else if (
+            startMenu.classList.contains("open")
+        ) {
+            closeStartMenu();
+        } else {
+            closeActiveWindow();
+        }
+    }
+);
+
+
+/* START CLOCK */
+
+window.setInterval(updateClock, 1000);
+updateClock();s
