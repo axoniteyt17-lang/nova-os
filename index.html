@@ -56,24 +56,16 @@
                 <div class="top-menu">
                     <button class="menu-button" type="button" aria-expanded="false">Edit</button>
                     <div class="menu-dropdown">
-                        <button type="button" data-action="select-all">
-                            <span>▣</span> Select All <kbd>Ctrl+A</kbd>
-                        </button>
-                        <button type="button" data-action="clear-field">
-                            <span>⌫</span> Clear Field
-                        </button>
+                        <button type="button" data-action="select-all"><span>▣</span> Select All <kbd>Ctrl+A</kbd></button>
+                        <button type="button" data-action="clear-field"><span>⌫</span> Clear Field</button>
                     </div>
                 </div>
 
                 <div class="top-menu">
                     <button class="menu-button" type="button" aria-expanded="false">View</button>
                     <div class="menu-dropdown">
-                        <button type="button" data-action="next-wallpaper">
-                            <span>🖼️</span> Next Wallpaper
-                        </button>
-                        <button type="button" data-action="fullscreen">
-                            <span>⛶</span> Toggle Full Screen
-                        </button>
+                        <button type="button" data-action="next-wallpaper"><span>🖼️</span> Next Wallpaper</button>
+                        <button type="button" data-action="fullscreen"><span>⛶</span> Toggle Full Screen</button>
                     </div>
                 </div>
 
@@ -83,24 +75,16 @@
                         <button type="button" data-action="open-files"><span>📁</span> Files</button>
                         <button type="button" data-action="open-browser"><span>🌐</span> Browser</button>
                         <button type="button" data-action="open-settings"><span>⚙️</span> Settings</button>
-
                         <div class="menu-separator"></div>
-
-                        <button type="button" data-action="close-active">
-                            <span>×</span> Close Active <kbd>Esc</kbd>
-                        </button>
+                        <button type="button" data-action="close-active"><span>×</span> Close Active <kbd>Esc</kbd></button>
                     </div>
                 </div>
 
                 <div class="top-menu">
                     <button class="menu-button" type="button" aria-expanded="false">Help</button>
                     <div class="menu-dropdown menu-dropdown-right">
-                        <button type="button" data-action="shortcuts">
-                            <span>⌨️</span> Keyboard Shortcuts
-                        </button>
-                        <button type="button" data-action="about">
-                            <span>✦</span> About NovaOS
-                        </button>
+                        <button type="button" data-action="shortcuts"><span>⌨️</span> Keyboard Shortcuts</button>
+                        <button type="button" data-action="about"><span>✦</span> About NovaOS</button>
                     </div>
                 </div>
             </div>
@@ -111,9 +95,6 @@
                 <span id="clock"></span>
             </div>
         </header>
-
-
-        <!-- DESKTOP ICONS -->
 
         <section id="desktop-icons" aria-label="Desktop apps">
             <button class="icon" type="button" onclick="openApp('files')">
@@ -137,236 +118,67 @@
             </button>
         </section>
 
-
-        <!-- FILE EXPLORER -->
-
-        <section class="window files-window" id="files" aria-label="Files window">
+        <section class="window" id="files" aria-label="Files window">
             <div class="titlebar">
                 <span>File Explorer</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('files')"
-                    aria-label="Close Files"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('files')" aria-label="Close Files">×</button>
             </div>
-
-            <div class="files-toolbar">
-                <button
-                    id="files-back"
-                    type="button"
-                    title="Back"
-                    aria-label="Go back"
-                >
-                    ←
+            <div class="window-content files-content">
+                <button class="file-item" type="button">
+                    <span aria-hidden="true">📄</span>
+                    <span><strong>Welcome.txt</strong><small>Your NovaOS starter file</small></span>
                 </button>
-
-                <div id="files-path" aria-label="Current folder">
-                    Home
-                </div>
-
-                <button id="files-new-file" type="button">
-                    ＋ File
+                <button class="file-item" type="button">
+                    <span aria-hidden="true">🎮</span>
+                    <span><strong>Games</strong><small>Folder</small></span>
                 </button>
-
-                <button id="files-new-folder" type="button">
-                    ＋ Folder
+                <button class="file-item" type="button">
+                    <span aria-hidden="true">🖼️</span>
+                    <span><strong>Photos</strong><small>Folder</small></span>
                 </button>
-
-                <button id="files-import" type="button">
-                    Import
-                </button>
-
-                <button id="files-download" type="button" disabled>
-                    Save to PC
-                </button>
-
-                <button id="files-rename" type="button" disabled>
-                    Rename
-                </button>
-
-                <button
-                    id="files-delete"
-                    class="danger-button"
-                    type="button"
-                    disabled
-                >
-                    Delete
-                </button>
-
-                <input
-                    id="files-import-input"
-                    type="file"
-                    accept=".txt,.json,.js,.css,.html,.md,.csv,.nova"
-                    multiple
-                    hidden
-                >
-            </div>
-
-            <div class="files-content">
-                <div
-                    id="files-grid"
-                    class="files-grid"
-                    aria-label="Files and folders"
-                ></div>
-
-                <div id="files-empty" class="files-empty" hidden>
-                    <span aria-hidden="true">📂</span>
-                    <strong>This folder is empty</strong>
-                    <small>Create a file or folder using the buttons above.</small>
-                </div>
-            </div>
-
-            <div class="files-statusbar">
-                <span id="files-status">0 items</span>
-                <span>Double-click to open</span>
-            </div>
-
-            <div id="file-editor" class="file-editor" hidden>
-                <div class="file-editor-heading">
-                    <div>
-                        <small>TEXT EDITOR</small>
-                        <strong id="file-editor-name">File.txt</strong>
-                    </div>
-
-                    <button
-                        id="file-editor-close"
-                        type="button"
-                        aria-label="Close text editor"
-                    >
-                        ×
-                    </button>
-                </div>
-
-                <textarea
-                    id="file-editor-content"
-                    aria-label="File contents"
-                    spellcheck="true"
-                ></textarea>
-
-                <div class="file-editor-actions">
-                    <span id="file-editor-status">Ready</span>
-                    <button id="file-editor-save" type="button">Save file</button>
-                </div>
             </div>
         </section>
-
-
-        <!-- BROWSER -->
 
         <section class="window" id="browser" aria-label="Browser window">
             <div class="titlebar">
                 <span>Nova Browser</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('browser')"
-                    aria-label="Close Browser"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('browser')" aria-label="Close Browser">×</button>
             </div>
-
             <div class="window-content browser-content">
                 <div class="browser-logo" aria-hidden="true">🌐</div>
-
                 <h2>Explore the web</h2>
-
                 <form id="browser-form">
-                    <input
-                        id="browser-search"
-                        type="text"
-                        placeholder="Search or enter a website"
-                        aria-label="Search the web"
-                    >
-
+                    <input id="browser-search" type="text" placeholder="Search or enter a website" aria-label="Search the web">
                     <button type="submit">Search</button>
                 </form>
-
                 <p class="hint">Results open safely in a new tab.</p>
             </div>
         </section>
 
-
-        <!-- SETTINGS -->
-
         <section class="window" id="settings" aria-label="Settings window">
             <div class="titlebar">
                 <span>Settings</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('settings')"
-                    aria-label="Close Settings"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('settings')" aria-label="Close Settings">×</button>
             </div>
-
             <div class="window-content settings-content">
                 <div>
                     <h2>Appearance</h2>
                     <p>Choose a new NovaOS wallpaper.</p>
                 </div>
-
                 <div class="wallpaper-grid" aria-label="Wallpaper choices">
-                    <button
-                        class="wallpaper wallpaper-one"
-                        type="button"
-                        onclick="changeWallpaper(0)"
-                        aria-label="Blue and purple wallpaper"
-                    ></button>
-
-                    <button
-                        class="wallpaper wallpaper-two"
-                        type="button"
-                        onclick="changeWallpaper(1)"
-                        aria-label="Pink sunset wallpaper"
-                    ></button>
-
-                    <button
-                        class="wallpaper wallpaper-three"
-                        type="button"
-                        onclick="changeWallpaper(2)"
-                        aria-label="Green aurora wallpaper"
-                    ></button>
-
-                    <button
-                        class="wallpaper wallpaper-four"
-                        type="button"
-                        onclick="changeWallpaper(3)"
-                        aria-label="Dark space wallpaper"
-                    ></button>
+                    <button class="wallpaper wallpaper-one" type="button" onclick="changeWallpaper(0)" aria-label="Blue and purple wallpaper"></button>
+                    <button class="wallpaper wallpaper-two" type="button" onclick="changeWallpaper(1)" aria-label="Pink sunset wallpaper"></button>
+                    <button class="wallpaper wallpaper-three" type="button" onclick="changeWallpaper(2)" aria-label="Green aurora wallpaper"></button>
+                    <button class="wallpaper wallpaper-four" type="button" onclick="changeWallpaper(3)" aria-label="Dark space wallpaper"></button>
                 </div>
-
                 <p id="wallpaper-status">Wallpaper: Nova</p>
             </div>
         </section>
 
-
-        <!-- NOVA STORE -->
-
-        <section
-            class="window store-window"
-            id="store"
-            aria-label="Nova Store window"
-        >
+        <section class="window store-window" id="store" aria-label="Nova Store window">
             <div class="titlebar">
                 <span>Nova Store</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('store')"
-                    aria-label="Close Nova Store"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('store')" aria-label="Close Nova Store">×</button>
             </div>
 
             <div class="window-content store-content">
@@ -375,414 +187,89 @@
                         <p class="eyebrow">NOVA STORE</p>
                         <h2>Discover new apps</h2>
                     </div>
-
                     <span class="store-bag" aria-hidden="true">🛍️</span>
                 </div>
 
-                <input
-                    id="store-search"
-                    type="search"
-                    placeholder="Search apps"
-                    aria-label="Search Nova Store apps"
-                >
-
-                <h3 class="store-section-title">Available now</h3>
+                <input id="store-search" type="search" placeholder="Search apps" aria-label="Search Nova Store apps">
 
                 <div class="store-grid">
-
-                    <!-- CALCULATOR -->
-
-                    <article
-                        class="store-card"
-                        data-store-name="calculator maths utility"
-                    >
-                        <div
-                            class="store-icon calculator-icon"
-                            aria-hidden="true"
-                        >
-                            🧮
-                        </div>
-
+                    <article class="store-card" data-store-name="calculator maths utility">
+                        <div class="store-icon calculator-icon" aria-hidden="true">🧮</div>
                         <div class="store-details">
                             <h3>Nova Calculator</h3>
                             <p>A quick calculator for NovaOS.</p>
                             <span>Utilities</span>
                         </div>
-
-                        <button
-                            class="install-button"
-                            type="button"
-                            data-install-app="calculator"
-                        >
-                            Install
-                        </button>
+                        <button class="install-button" type="button" data-install-app="calculator">Install</button>
                     </article>
 
-
-                    <!-- NOTES -->
-
-                    <article
-                        class="store-card"
-                        data-store-name="notes writing text utility"
-                    >
-                        <div
-                            class="store-icon notes-icon"
-                            aria-hidden="true"
-                        >
-                            📝
-                        </div>
-
+                    <article class="store-card" data-store-name="notes writing text utility">
+                        <div class="store-icon notes-icon" aria-hidden="true">📝</div>
                         <div class="store-details">
                             <h3>Nova Notes</h3>
                             <p>Write notes that save automatically.</p>
                             <span>Productivity</span>
                         </div>
-
-                        <button
-                            class="install-button"
-                            type="button"
-                            data-install-app="notes"
-                        >
-                            Install
-                        </button>
+                        <button class="install-button" type="button" data-install-app="notes">Install</button>
                     </article>
 
-
-                    <!-- PAINT IS AVAILABLE -->
-
-                    <article
-                        class="store-card"
-                        data-store-name="paint drawing art creativity"
-                    >
-                        <div
-                            class="store-icon paint-icon"
-                            aria-hidden="true"
-                        >
-                            🎨
-                        </div>
-
+                    <article class="store-card" data-store-name="paint drawing art creativity">
+                        <div class="store-icon paint-icon" aria-hidden="true">🎨</div>
                         <div class="store-details">
                             <h3>Nova Paint</h3>
-                            <p>Draw pictures and save them as PNG files.</p>
+                            <p>A drawing app coming in the next update.</p>
                             <span>Creativity</span>
                         </div>
-
-                        <button
-                            class="install-button"
-                            type="button"
-                            data-install-app="paint"
-                        >
-                            Install
-                        </button>
+                        <button class="install-button coming-soon" type="button" disabled>Soon</button>
                     </article>
-
                 </div>
 
-
-                <!-- SOON APPS -->
-
-                <section class="soon-section">
-                    <div class="soon-heading">
-                        <div>
-                            <p class="eyebrow">COMING TO NOVAOS</p>
-                            <h3>Soon</h3>
-                        </div>
-
-                        <span aria-hidden="true">🚀</span>
-                    </div>
-
-                    <div class="soon-grid">
-                        <article
-                            class="soon-card"
-                            data-store-name="arcade games gaming"
-                        >
-                            <span>🎮</span>
-                            <div>
-                                <strong>Nova Arcade</strong>
-                                <small>Games</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="music songs audio"
-                        >
-                            <span>🎵</span>
-                            <div>
-                                <strong>Nova Music</strong>
-                                <small>Entertainment</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="weather forecast"
-                        >
-                            <span>🌦️</span>
-                            <div>
-                                <strong>Weather</strong>
-                                <small>Information</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="mail email"
-                        >
-                            <span>✉️</span>
-                            <div>
-                                <strong>Nova Mail</strong>
-                                <small>Communication</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="calendar dates events"
-                        >
-                            <span>📅</span>
-                            <div>
-                                <strong>Calendar</strong>
-                                <small>Productivity</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="camera photos"
-                        >
-                            <span>📷</span>
-                            <div>
-                                <strong>Camera</strong>
-                                <small>Creativity</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="terminal command code"
-                        >
-                            <span>⌨️</span>
-                            <div>
-                                <strong>Terminal</strong>
-                                <small>Developer tools</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="maps places navigation"
-                        >
-                            <span>🗺️</span>
-                            <div>
-                                <strong>Nova Maps</strong>
-                                <small>Navigation</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="video movies player"
-                        >
-                            <span>🎬</span>
-                            <div>
-                                <strong>Nova Video</strong>
-                                <small>Entertainment</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="chat messages friends"
-                        >
-                            <span>💬</span>
-                            <div>
-                                <strong>Nova Chat</strong>
-                                <small>Social</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="clock alarm timer"
-                        >
-                            <span>⏰</span>
-                            <div>
-                                <strong>Clock</strong>
-                                <small>Utilities</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-
-                        <article
-                            class="soon-card"
-                            data-store-name="tasks todo checklist"
-                        >
-                            <span>✅</span>
-                            <div>
-                                <strong>Nova Tasks</strong>
-                                <small>Productivity</small>
-                            </div>
-                            <b>Soon</b>
-                        </article>
-                    </div>
-                </section>
-
-                <p id="store-empty" hidden>
-                    No apps matched your search.
-                </p>
+                <p id="store-empty" hidden>No apps matched your search.</p>
             </div>
         </section>
 
-
-        <!-- CALCULATOR APP -->
-
-        <section
-            class="window calculator-window"
-            id="calculator"
-            aria-label="Calculator window"
-        >
+        <section class="window calculator-window" id="calculator" aria-label="Calculator window">
             <div class="titlebar">
                 <span>Nova Calculator</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('calculator')"
-                    aria-label="Close Calculator"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('calculator')" aria-label="Close Calculator">×</button>
             </div>
 
             <div class="window-content calculator-content">
-                <input
-                    id="calculator-display"
-                    value="0"
-                    aria-label="Calculator display"
-                    readonly
-                >
+                <input id="calculator-display" value="0" aria-label="Calculator display" readonly>
 
                 <div class="calculator-grid">
-                    <button
-                        type="button"
-                        data-calculator-action="clear"
-                        class="calculator-special"
-                    >
-                        C
-                    </button>
-
-                    <button
-                        type="button"
-                        data-calculator-action="delete"
-                        class="calculator-special"
-                    >
-                        ⌫
-                    </button>
-
-                    <button
-                        type="button"
-                        data-calculator-value="("
-                        class="calculator-special"
-                    >
-                        (
-                    </button>
-
-                    <button
-                        type="button"
-                        data-calculator-value="/"
-                        class="calculator-operator"
-                    >
-                        ÷
-                    </button>
+                    <button type="button" data-calculator-action="clear" class="calculator-special">C</button>
+                    <button type="button" data-calculator-action="delete" class="calculator-special">⌫</button>
+                    <button type="button" data-calculator-value="(" class="calculator-special">(</button>
+                    <button type="button" data-calculator-value="/" class="calculator-operator">÷</button>
 
                     <button type="button" data-calculator-value="7">7</button>
                     <button type="button" data-calculator-value="8">8</button>
                     <button type="button" data-calculator-value="9">9</button>
-
-                    <button
-                        type="button"
-                        data-calculator-value="*"
-                        class="calculator-operator"
-                    >
-                        ×
-                    </button>
+                    <button type="button" data-calculator-value="*" class="calculator-operator">×</button>
 
                     <button type="button" data-calculator-value="4">4</button>
                     <button type="button" data-calculator-value="5">5</button>
                     <button type="button" data-calculator-value="6">6</button>
-
-                    <button
-                        type="button"
-                        data-calculator-value="-"
-                        class="calculator-operator"
-                    >
-                        −
-                    </button>
+                    <button type="button" data-calculator-value="-" class="calculator-operator">−</button>
 
                     <button type="button" data-calculator-value="1">1</button>
                     <button type="button" data-calculator-value="2">2</button>
                     <button type="button" data-calculator-value="3">3</button>
-
-                    <button
-                        type="button"
-                        data-calculator-value="+"
-                        class="calculator-operator"
-                    >
-                        +
-                    </button>
+                    <button type="button" data-calculator-value="+" class="calculator-operator">+</button>
 
                     <button type="button" data-calculator-value="0">0</button>
                     <button type="button" data-calculator-value=".">.</button>
-
-                    <button
-                        type="button"
-                        data-calculator-value=")"
-                        class="calculator-special"
-                    >
-                        )
-                    </button>
-
-                    <button
-                        type="button"
-                        data-calculator-action="equals"
-                        class="calculator-equals"
-                    >
-                        =
-                    </button>
+                    <button type="button" data-calculator-value=")" class="calculator-special">)</button>
+                    <button type="button" data-calculator-action="equals" class="calculator-equals">=</button>
                 </div>
             </div>
         </section>
 
-
-        <!-- NOTES APP -->
-
-        <section
-            class="window notes-window"
-            id="notes"
-            aria-label="Notes window"
-        >
+        <section class="window notes-window" id="notes" aria-label="Notes window">
             <div class="titlebar">
                 <span>Nova Notes</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('notes')"
-                    aria-label="Close Notes"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('notes')" aria-label="Close Notes">×</button>
             </div>
 
             <div class="notes-toolbar">
@@ -790,217 +277,63 @@
                 <span id="notes-status">Saved</span>
             </div>
 
-            <textarea
-                id="notes-textarea"
-                placeholder="Start writing..."
-                aria-label="Nova Notes text"
-            ></textarea>
+            <textarea id="notes-textarea" placeholder="Start writing..." aria-label="Nova Notes text"></textarea>
         </section>
 
-
-        <!-- PAINT APP -->
-
-        <section
-            class="window paint-window"
-            id="paint"
-            aria-label="Nova Paint window"
-        >
-            <div class="titlebar">
-                <span>Nova Paint</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('paint')"
-                    aria-label="Close Nova Paint"
-                >
-                    ×
-                </button>
-            </div>
-
-            <div class="paint-toolbar">
-                <label>
-                    Colour
-
-                    <input
-                        id="paint-colour"
-                        type="color"
-                        value="#6d5dfc"
-                    >
-                </label>
-
-                <label>
-                    Brush
-
-                    <input
-                        id="paint-size"
-                        type="range"
-                        min="2"
-                        max="34"
-                        value="8"
-                    >
-                </label>
-
-                <button type="button" id="paint-clear">
-                    Clear
-                </button>
-
-                <button type="button" id="paint-save">
-                    Save PNG
-                </button>
-            </div>
-
-            <div class="paint-canvas-wrap">
-                <canvas
-                    id="paint-canvas"
-                    width="900"
-                    height="520"
-                    aria-label="Drawing canvas"
-                ></canvas>
-            </div>
-        </section>
-
-
-        <!-- MESSAGE WINDOW -->
-
-        <section
-            class="window prompt-window"
-            id="system-prompt"
-            aria-label="NovaOS message"
-        >
+        <section class="window prompt-window" id="system-prompt" aria-label="NovaOS message">
             <div class="titlebar">
                 <span id="prompt-title">NovaOS</span>
-
-                <button
-                    class="close-button"
-                    type="button"
-                    onclick="closeApp('system-prompt')"
-                    aria-label="Close message"
-                >
-                    ×
-                </button>
+                <button class="close-button" type="button" onclick="closeApp('system-prompt')" aria-label="Close message">×</button>
             </div>
-
             <div class="window-content prompt-content">
                 <div class="prompt-logo" aria-hidden="true">✦</div>
-
                 <h2 id="prompt-heading">NovaOS</h2>
-
                 <p id="prompt-message"></p>
-
-                <button
-                    class="primary-button"
-                    type="button"
-                    onclick="closeApp('system-prompt')"
-                >
-                    OK
-                </button>
+                <button class="primary-button" type="button" onclick="closeApp('system-prompt')">OK</button>
             </div>
         </section>
 
-
-        <!-- START MENU -->
-
         <section id="start-menu" aria-label="Start menu">
-            <input
-                id="start-search"
-                type="search"
-                placeholder="Search apps"
-                aria-label="Search installed apps"
-            >
+            <input id="start-search" type="search" placeholder="Search apps" aria-label="Search installed apps">
 
             <div class="start-section-heading">
                 <h2>Pinned</h2>
-
-                <button
-                    type="button"
-                    onclick="openAppFromStart('store')"
-                >
-                    All apps →
-                </button>
+                <button type="button" onclick="openAppFromStart('store')">All apps →</button>
             </div>
 
             <div class="start-app-grid">
-                <button
-                    class="start-app"
-                    type="button"
-                    data-start-name="files"
-                    onclick="openAppFromStart('files')"
-                >
+                <button class="start-app" type="button" data-start-name="files" onclick="openAppFromStart('files')">
                     <span>📁</span>
                     <small>Files</small>
                 </button>
 
-                <button
-                    class="start-app"
-                    type="button"
-                    data-start-name="browser web internet"
-                    onclick="openAppFromStart('browser')"
-                >
+                <button class="start-app" type="button" data-start-name="browser web internet" onclick="openAppFromStart('browser')">
                     <span>🌐</span>
                     <small>Browser</small>
                 </button>
 
-                <button
-                    class="start-app"
-                    type="button"
-                    data-start-name="settings preferences"
-                    onclick="openAppFromStart('settings')"
-                >
+                <button class="start-app" type="button" data-start-name="settings preferences" onclick="openAppFromStart('settings')">
                     <span>⚙️</span>
                     <small>Settings</small>
                 </button>
 
-                <button
-                    class="start-app"
-                    type="button"
-                    data-start-name="store apps"
-                    onclick="openAppFromStart('store')"
-                >
+                <button class="start-app" type="button" data-start-name="store apps" onclick="openAppFromStart('store')">
                     <span>🛍️</span>
                     <small>Store</small>
                 </button>
 
-                <button
-                    class="start-app installed-start-app"
-                    type="button"
-                    data-start-name="calculator maths"
-                    data-installed-app="calculator"
-                    onclick="openInstalledApp('calculator')"
-                    hidden
-                >
+                <button class="start-app installed-start-app" type="button" data-start-name="calculator maths" data-installed-app="calculator" onclick="openInstalledApp('calculator')" hidden>
                     <span>🧮</span>
                     <small>Calculator</small>
                 </button>
 
-                <button
-                    class="start-app installed-start-app"
-                    type="button"
-                    data-start-name="notes writing"
-                    data-installed-app="notes"
-                    onclick="openInstalledApp('notes')"
-                    hidden
-                >
+                <button class="start-app installed-start-app" type="button" data-start-name="notes writing" data-installed-app="notes" onclick="openInstalledApp('notes')" hidden>
                     <span>📝</span>
                     <small>Notes</small>
                 </button>
-
-                <button
-                    class="start-app installed-start-app"
-                    type="button"
-                    data-start-name="paint drawing art"
-                    data-installed-app="paint"
-                    onclick="openInstalledApp('paint')"
-                    hidden
-                >
-                    <span>🎨</span>
-                    <small>Paint</small>
-                </button>
             </div>
 
-            <p id="start-empty" hidden>
-                No installed apps matched your search.
-            </p>
+            <p id="start-empty" hidden>No installed apps matched your search.</p>
 
             <footer class="start-footer">
                 <div class="start-user">
@@ -1008,74 +341,18 @@
                     <strong id="start-username">Nova User</strong>
                 </div>
 
-                <button
-                    type="button"
-                    onclick="lockNovaOS()"
-                    aria-label="Lock NovaOS"
-                >
-                    ⏻
-                </button>
+                <button type="button" onclick="lockNovaOS()" aria-label="Lock NovaOS">⏻</button>
             </footer>
         </section>
 
-
-        <!-- DOCK -->
-
         <nav id="dock" aria-label="App dock">
-            <button
-                class="dock-icon start-button"
-                type="button"
-                onclick="toggleStartMenu()"
-                aria-label="Open Start menu"
-            >
-                ✦
-            </button>
-
-            <button
-                class="dock-icon"
-                type="button"
-                onclick="openApp('files')"
-                aria-label="Open Files"
-            >
-                📁
-            </button>
-
-            <button
-                class="dock-icon"
-                type="button"
-                onclick="openApp('browser')"
-                aria-label="Open Browser"
-            >
-                🌐
-            </button>
-
-            <button
-                class="dock-icon"
-                type="button"
-                onclick="openApp('settings')"
-                aria-label="Open Settings"
-            >
-                ⚙️
-            </button>
-
-            <button
-                class="dock-icon"
-                type="button"
-                onclick="openApp('store')"
-                aria-label="Open Nova Store"
-            >
-                🛍️
-            </button>
-
+            <button class="dock-icon start-button" type="button" onclick="toggleStartMenu()" aria-label="Open Start menu">✦</button>
+            <button class="dock-icon" type="button" onclick="openApp('files')" aria-label="Open Files">📁</button>
+            <button class="dock-icon" type="button" onclick="openApp('browser')" aria-label="Open Browser">🌐</button>
+            <button class="dock-icon" type="button" onclick="openApp('settings')" aria-label="Open Settings">⚙️</button>
+            <button class="dock-icon" type="button" onclick="openApp('store')" aria-label="Open Nova Store">🛍️</button>
             <span class="dock-line" aria-hidden="true"></span>
-
-            <button
-                class="dock-icon"
-                type="button"
-                aria-label="Trash"
-            >
-                🗑️
-            </button>
+            <button class="dock-icon" type="button" aria-label="Trash">🗑️</button>
         </nav>
     </main>
 

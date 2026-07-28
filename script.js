@@ -13,7 +13,6 @@ const calculatorDisplay = document.getElementById("calculator-display");
 const paintCanvas = document.getElementById("paint-canvas");
 const paintColour = document.getElementById("paint-colour");
 const paintSize = document.getElementById("paint-size");
-
 const filesGrid = document.getElementById("files-grid");
 const filesPath = document.getElementById("files-path");
 const filesBackButton = document.getElementById("files-back");
@@ -31,47 +30,35 @@ let lastFocusedInput = null;
 let calculatorExpression = "";
 let notesSaveTimer;
 let installedApps = new Set();
-
 let currentFolderId = "root";
 let selectedFileId = null;
 let editingFileId = null;
 let folderHistory = [];
 
-
-/* VIRTUAL FILE SYSTEM */
-
 const defaultFileSystem = {
     id: "root",
     name: "Home",
     type: "folder",
-
     children: [
         {
             id: "welcome-file",
             name: "Welcome.txt",
             type: "file",
-            content:
-                "Welcome to NovaOS!\n\n" +
-                "This is a real editable virtual file.\n" +
-                "Change this text and press Save file."
+            content: "Welcome to NovaOS!\n\nThis is a real editable file. Change this text and press Save file."
         },
-
         {
             id: "games-folder",
             name: "Games",
             type: "folder",
-
             children: [
                 {
                     id: "games-readme",
                     name: "Games.txt",
                     type: "file",
-                    content:
-                        "Your installed NovaOS games and game saves will appear here."
+                    content: "Your installed NovaOS games will appear here."
                 }
             ]
         },
-
         {
             id: "photos-folder",
             name: "Photos",
@@ -83,11 +70,9 @@ const defaultFileSystem = {
 
 let novaFileSystem = loadFileSystem();
 
-
 function cloneDefaultFileSystem() {
     return JSON.parse(JSON.stringify(defaultFileSystem));
 }
-
 
 function loadFileSystem() {
     try {
@@ -104,12 +89,11 @@ function loadFileSystem() {
             return savedFileSystem;
         }
     } catch {
-        // Use the default files if browser storage cannot be read.
+        // Use the starter files if saved data cannot be read.
     }
 
     return cloneDefaultFileSystem();
 }
-
 
 function saveFileSystem() {
     try {
@@ -125,7 +109,6 @@ function saveFileSystem() {
     }
 }
 
-
 function createFileId() {
     if (
         window.crypto &&
@@ -134,11 +117,8 @@ function createFileId() {
         return window.crypto.randomUUID();
     }
 
-    return `nova-${Date.now()}-${Math.random()
-        .toString(16)
-        .slice(2)}`;
+    return `nova-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
-
 
 function findFileItem(itemId, item = novaFileSystem) {
     if (item.id === itemId) {
@@ -160,17 +140,12 @@ function findFileItem(itemId, item = novaFileSystem) {
     return null;
 }
 
-
 function findParentFolder(itemId, folder = novaFileSystem) {
     if (folder.type !== "folder") {
         return null;
     }
 
-    if (
-        folder.children.some(
-            (child) => child.id === itemId
-        )
-    ) {
+    if (folder.children.some((child) => child.id === itemId)) {
         return folder;
     }
 
@@ -187,12 +162,7 @@ function findParentFolder(itemId, folder = novaFileSystem) {
     return null;
 }
 
-
-function getFolderPath(
-    folderId,
-    folder = novaFileSystem,
-    path = []
-) {
+function getFolderPath(folderId, folder = novaFileSystem, path = []) {
     const nextPath = [...path, folder];
 
     if (folder.id === folderId) {
@@ -201,11 +171,7 @@ function getFolderPath(
 
     for (const child of folder.children) {
         if (child.type === "folder") {
-            const result = getFolderPath(
-                folderId,
-                child,
-                nextPath
-            );
+            const result = getFolderPath(folderId, child, nextPath);
 
             if (result) {
                 return result;
@@ -216,71 +182,51 @@ function getFolderPath(
     return null;
 }
 
-
 function getCurrentFolder() {
     const folder = findFileItem(currentFolderId);
 
     if (!folder || folder.type !== "folder") {
         currentFolderId = "root";
         folderHistory = [];
-
         return novaFileSystem;
     }
 
     return folder;
 }
 
-
 function getFileIcon(item) {
     if (item.type === "folder") {
-        if (item.name.toLowerCase() === "photos") {
-            return "🖼️";
-        }
-
-        if (item.name.toLowerCase() === "games") {
-            return "🎮";
-        }
-
-        if (item.name.toLowerCase() === "saves") {
-            return "💾";
-        }
-
-        return "📁";
+        return item.name.toLowerCase() === "photos"
+            ? "🖼️"
+            : item.name.toLowerCase() === "games"
+              ? "🎮"
+              : "📁";
     }
 
     const extension = item.name.includes(".")
         ? item.name.split(".").pop().toLowerCase()
         : "";
 
-    if (
-        ["png", "jpg", "jpeg", "gif", "webp"].includes(
-            extension
-        )
-    ) {
+    if (["png", "jpg", "jpeg", "gif", "webp"].includes(extension)) {
         return "🖼️";
     }
 
-    if (
-        ["html", "css", "js", "json"].includes(extension)
-    ) {
+    if (["html", "css", "js", "json"].includes(extension)) {
         return "💻";
     }
 
     return "📄";
 }
 
-
 function setSelectedFile(itemId) {
     selectedFileId = itemId;
 
-    document
-        .querySelectorAll(".file-entry")
-        .forEach((entry) => {
-            entry.classList.toggle(
-                "selected",
-                entry.dataset.fileId === itemId
-            );
-        });
+    document.querySelectorAll(".file-entry").forEach((entry) => {
+        entry.classList.toggle(
+            "selected",
+            entry.dataset.fileId === itemId
+        );
+    });
 
     const hasSelection = Boolean(selectedFileId);
 
@@ -289,37 +235,31 @@ function setSelectedFile(itemId) {
     filesDownloadButton.disabled = !hasSelection;
 }
 
-
 function renderFileExplorer() {
     const folder = getCurrentFolder();
 
-    const items = [...folder.children].sort(
-        (first, second) => {
-            if (first.type !== second.type) {
-                return first.type === "folder" ? -1 : 1;
-            }
-
-            return first.name.localeCompare(second.name);
+    const items = [...folder.children].sort((first, second) => {
+        if (first.type !== second.type) {
+            return first.type === "folder" ? -1 : 1;
         }
-    );
+
+        return first.name.localeCompare(second.name);
+    });
 
     filesGrid.replaceChildren();
-
     selectedFileId = null;
 
     filesRenameButton.disabled = true;
     filesDeleteButton.disabled = true;
     filesDownloadButton.disabled = true;
 
-    const path =
-        getFolderPath(folder.id) || [novaFileSystem];
+    const path = getFolderPath(folder.id) || [novaFileSystem];
 
     filesPath.textContent = path
         .map((part) => part.name)
         .join("  ›  ");
 
-    filesBackButton.disabled =
-        folderHistory.length === 0;
+    filesBackButton.disabled = folderHistory.length === 0;
 
     items.forEach((item) => {
         const entry = document.createElement("button");
@@ -341,9 +281,7 @@ function renderFileExplorer() {
         details.textContent =
             item.type === "folder"
                 ? `${item.children.length} item${
-                      item.children.length === 1
-                          ? ""
-                          : "s"
+                      item.children.length === 1 ? "" : "s"
                   }`
                 : "Text file";
 
@@ -363,14 +301,9 @@ function renderFileExplorer() {
     document.getElementById("files-empty").hidden =
         items.length !== 0;
 
-    document.getElementById(
-        "files-status"
-    ).textContent =
-        `${items.length} item${
-            items.length === 1 ? "" : "s"
-        }`;
+    document.getElementById("files-status").textContent =
+        `${items.length} item${items.length === 1 ? "" : "s"}`;
 }
-
 
 function openFileItem(itemId) {
     const item = findFileItem(itemId);
@@ -385,37 +318,29 @@ function openFileItem(itemId) {
 
         closeFileEditor(true);
         renderFileExplorer();
-
         return;
     }
 
     editingFileId = item.id;
 
-    document.getElementById(
-        "file-editor-name"
-    ).textContent = item.name;
+    document.getElementById("file-editor-name").textContent =
+        item.name;
 
     fileEditorContent.value = item.content || "";
 
-    document.getElementById(
-        "file-editor-status"
-    ).textContent = "Ready";
+    document.getElementById("file-editor-status").textContent =
+        "Ready";
 
     fileEditor.hidden = false;
     fileEditorContent.focus();
 }
 
-
 function closeFileEditor(forceClose = false) {
-    const hasUnsavedChanges =
-        document.getElementById(
-            "file-editor-status"
-        ).textContent === "Unsaved changes";
-
     if (
         !forceClose &&
         !fileEditor.hidden &&
-        hasUnsavedChanges &&
+        document.getElementById("file-editor-status").textContent ===
+            "Unsaved changes" &&
         !window.confirm(
             "Close this file without saving your changes?"
         )
@@ -427,29 +352,22 @@ function closeFileEditor(forceClose = false) {
     fileEditor.hidden = true;
 }
 
-
 function askForItemName(type, currentName = "") {
-    const label =
-        type === "folder" ? "folder" : "file";
+    const label = type === "folder" ? "folder" : "file";
 
     const answer = window.prompt(
         currentName
             ? `Rename this ${label}:`
             : `Enter a name for the new ${label}:`,
-
         currentName ||
-            (type === "folder"
-                ? "New folder"
-                : "New file.txt")
+            (type === "folder" ? "New folder" : "New file.txt")
     );
 
     if (answer === null) {
         return null;
     }
 
-    const cleanedName = answer
-        .trim()
-        .replace(/[\\/]/g, "-");
+    const cleanedName = answer.trim().replace(/[\\/]/g, "-");
 
     if (!cleanedName) {
         showNovaPrompt(
@@ -463,20 +381,13 @@ function askForItemName(type, currentName = "") {
     return cleanedName;
 }
 
-
-function folderHasName(
-    folder,
-    name,
-    ignoredItemId = null
-) {
+function folderHasName(folder, name, ignoredItemId = null) {
     return folder.children.some(
         (item) =>
             item.id !== ignoredItemId &&
-            item.name.toLowerCase() ===
-                name.toLowerCase()
+            item.name.toLowerCase() === name.toLowerCase()
     );
 }
-
 
 function createFileSystemItem(type) {
     const folder = getCurrentFolder();
@@ -518,34 +429,21 @@ function createFileSystemItem(type) {
     }
 }
 
-
 function renameSelectedFileItem() {
     const item = findFileItem(selectedFileId);
-
-    const parent = item
-        ? findParentFolder(item.id)
-        : null;
+    const parent = item ? findParentFolder(item.id) : null;
 
     if (!item || !parent) {
         return;
     }
 
-    const newName = askForItemName(
-        item.type,
-        item.name
-    );
+    const newName = askForItemName(item.type, item.name);
 
     if (!newName || newName === item.name) {
         return;
     }
 
-    if (
-        folderHasName(
-            parent,
-            newName,
-            item.id
-        )
-    ) {
+    if (folderHasName(parent, newName, item.id)) {
         showNovaPrompt(
             "File Explorer",
             `An item named "${newName}" already exists in this folder.`
@@ -561,29 +459,20 @@ function renameSelectedFileItem() {
     setSelectedFile(item.id);
 }
 
-
 function deleteSelectedFileItem() {
     const item = findFileItem(selectedFileId);
-
-    const parent = item
-        ? findParentFolder(item.id)
-        : null;
+    const parent = item ? findParentFolder(item.id) : null;
 
     if (!item || !parent) {
         return;
     }
 
     const extraWarning =
-        item.type === "folder" &&
-        item.children.length
+        item.type === "folder" && item.children.length
             ? " Everything inside it will also be deleted."
             : "";
 
-    if (
-        !window.confirm(
-            `Delete "${item.name}"?${extraWarning}`
-        )
-    ) {
+    if (!window.confirm(`Delete "${item.name}"?${extraWarning}`)) {
         return;
     }
 
@@ -599,11 +488,7 @@ function deleteSelectedFileItem() {
     renderFileExplorer();
 }
 
-
-function makeAvailableFileName(
-    folder,
-    requestedName
-) {
+function makeAvailableFileName(folder, requestedName) {
     if (!folderHasName(folder, requestedName)) {
         return requestedName;
     }
@@ -624,11 +509,8 @@ function makeAvailableFileName(
     let availableName =
         `${baseName} (${copyNumber})${extension}`;
 
-    while (
-        folderHasName(folder, availableName)
-    ) {
+    while (folderHasName(folder, availableName)) {
         copyNumber += 1;
-
         availableName =
             `${baseName} (${copyNumber})${extension}`;
     }
@@ -636,26 +518,17 @@ function makeAvailableFileName(
     return availableName;
 }
 
-
-/* SAVE REAL FILES TO THE COMPUTER */
-
 function downloadWithLink(
     fileName,
     contents,
     mimeType = "text/plain"
 ) {
-    const blob = new Blob(
-        [contents],
-        {
-            type: `${mimeType};charset=utf-8`
-        }
-    );
+    const blob = new Blob([contents], {
+        type: `${mimeType};charset=utf-8`
+    });
 
-    const objectUrl =
-        URL.createObjectURL(blob);
-
-    const downloadLink =
-        document.createElement("a");
+    const objectUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
 
     downloadLink.href = objectUrl;
     downloadLink.download = fileName;
@@ -665,7 +538,6 @@ function downloadWithLink(
         URL.revokeObjectURL(objectUrl);
     }, 1000);
 }
-
 
 async function saveSelectedItemToComputer() {
     const item = findFileItem(selectedFileId);
@@ -685,57 +557,37 @@ async function saveSelectedItemToComputer() {
         : item.content || "";
 
     const mimeType =
-        isFolder ||
-        fileName.toLowerCase().endsWith(".json")
+        isFolder || fileName.toLowerCase().endsWith(".json")
             ? "application/json"
             : "text/plain";
 
-    if (
-        typeof window.showSaveFilePicker ===
-        "function"
-    ) {
+    if (typeof window.showSaveFilePicker === "function") {
         try {
-            const handle =
-                await window.showSaveFilePicker({
-                    suggestedName: fileName
-                });
+            const handle = await window.showSaveFilePicker({
+                suggestedName: fileName
+            });
 
-            const writable =
-                await handle.createWritable();
+            const writable = await handle.createWritable();
 
             await writable.write(contents);
             await writable.close();
 
-            document.getElementById(
-                "files-status"
-            ).textContent =
+            document.getElementById("files-status").textContent =
                 `Saved ${fileName} to your computer`;
 
             return;
         } catch (error) {
-            if (
-                error &&
-                error.name === "AbortError"
-            ) {
+            if (error && error.name === "AbortError") {
                 return;
             }
         }
     }
 
-    downloadWithLink(
-        fileName,
-        contents,
-        mimeType
-    );
+    downloadWithLink(fileName, contents, mimeType);
 
-    document.getElementById(
-        "files-status"
-    ).textContent =
+    document.getElementById("files-status").textContent =
         `Downloaded ${fileName}`;
 }
-
-
-/* IMPORT REAL FILES */
 
 async function importRealFiles(fileList) {
     const folder = getCurrentFolder();
@@ -743,17 +595,14 @@ async function importRealFiles(fileList) {
 
     for (const realFile of fileList) {
         try {
-            const contents =
-                await realFile.text();
+            const contents = await realFile.text();
 
             const importedItem = {
                 id: createFileId(),
-
                 name: makeAvailableFileName(
                     folder,
                     realFile.name
                 ),
-
                 type: "file",
                 content: contents
             };
@@ -778,32 +627,21 @@ async function importRealFiles(fileList) {
     renderFileExplorer();
 
     setSelectedFile(
-        importedItems[
-            importedItems.length - 1
-        ].id
+        importedItems[importedItems.length - 1].id
     );
 
-    document.getElementById(
-        "files-status"
-    ).textContent =
+    document.getElementById("files-status").textContent =
         `Imported ${importedItems.length} file${
             importedItems.length === 1 ? "" : "s"
         }`;
 }
 
-
-/* APP AND GAME SAVE API */
-
-function getOrCreateSaveFolder(
-    folderName = "Saves"
-) {
-    let saveFolder =
-        novaFileSystem.children.find(
-            (item) =>
-                item.type === "folder" &&
-                item.name.toLowerCase() ===
-                    folderName.toLowerCase()
-        );
+function getOrCreateSaveFolder(folderName = "Saves") {
+    let saveFolder = novaFileSystem.children.find(
+        (item) =>
+            item.type === "folder" &&
+            item.name.toLowerCase() === folderName.toLowerCase()
+    );
 
     if (!saveFolder) {
         saveFolder = {
@@ -819,27 +657,23 @@ function getOrCreateSaveFolder(
     return saveFolder;
 }
 
-
 function saveAppProgress(
     fileName,
     data,
     folderName = "Saves"
 ) {
-    const saveFolder =
-        getOrCreateSaveFolder(folderName);
+    const saveFolder = getOrCreateSaveFolder(folderName);
 
     const contents =
         typeof data === "string"
             ? data
             : JSON.stringify(data, null, 2);
 
-    let saveFile =
-        saveFolder.children.find(
-            (item) =>
-                item.type === "file" &&
-                item.name.toLowerCase() ===
-                    fileName.toLowerCase()
-        );
+    let saveFile = saveFolder.children.find(
+        (item) =>
+            item.type === "file" &&
+            item.name.toLowerCase() === fileName.toLowerCase()
+    );
 
     if (saveFile) {
         saveFile.content = contents;
@@ -866,26 +700,21 @@ function saveAppProgress(
     return saveFile.id;
 }
 
-
 function loadAppProgress(
     fileName,
     folderName = "Saves"
 ) {
-    const saveFolder =
-        novaFileSystem.children.find(
-            (item) =>
-                item.type === "folder" &&
-                item.name.toLowerCase() ===
-                    folderName.toLowerCase()
-        );
+    const saveFolder = novaFileSystem.children.find(
+        (item) =>
+            item.type === "folder" &&
+            item.name.toLowerCase() === folderName.toLowerCase()
+    );
 
-    const saveFile =
-        saveFolder?.children.find(
-            (item) =>
-                item.type === "file" &&
-                item.name.toLowerCase() ===
-                    fileName.toLowerCase()
-        );
+    const saveFile = saveFolder?.children.find(
+        (item) =>
+            item.type === "file" &&
+            item.name.toLowerCase() === fileName.toLowerCase()
+    );
 
     if (!saveFile) {
         return null;
@@ -898,44 +727,24 @@ function loadAppProgress(
     }
 }
 
-
-/*
-    Future NovaOS apps can save progress with:
-
-    NovaFS.save("game-save.json", {
-        level: 5,
-        coins: 250
-    });
-
-    They can load progress with:
-
-    const progress =
-        NovaFS.load("game-save.json");
-*/
-
 window.NovaFS = {
     save: saveAppProgress,
     load: loadAppProgress,
 
-    download(
-        fileName,
-        folderName = "Saves"
-    ) {
-        const saveFolder =
-            novaFileSystem.children.find(
-                (item) =>
-                    item.type === "folder" &&
-                    item.name.toLowerCase() ===
-                        folderName.toLowerCase()
-            );
+    download(fileName, folderName = "Saves") {
+        const saveFolder = novaFileSystem.children.find(
+            (item) =>
+                item.type === "folder" &&
+                item.name.toLowerCase() ===
+                    folderName.toLowerCase()
+        );
 
-        const saveFile =
-            saveFolder?.children.find(
-                (item) =>
-                    item.type === "file" &&
-                    item.name.toLowerCase() ===
-                        fileName.toLowerCase()
-            );
+        const saveFile = saveFolder?.children.find(
+            (item) =>
+                item.type === "file" &&
+                item.name.toLowerCase() ===
+                    fileName.toLowerCase()
+        );
 
         if (!saveFile) {
             return false;
@@ -950,25 +759,15 @@ window.NovaFS = {
     }
 };
 
+filesBackButton.addEventListener("click", () => {
+    const previousFolderId = folderHistory.pop();
 
-/* FILE EXPLORER BUTTONS */
-
-filesBackButton.addEventListener(
-    "click",
-    () => {
-        const previousFolderId =
-            folderHistory.pop();
-
-        if (previousFolderId) {
-            currentFolderId =
-                previousFolderId;
-
-            closeFileEditor(true);
-            renderFileExplorer();
-        }
+    if (previousFolderId) {
+        currentFolderId = previousFolderId;
+        closeFileEditor(true);
+        renderFileExplorer();
     }
-);
-
+});
 
 document
     .getElementById("files-new-file")
@@ -976,13 +775,11 @@ document
         createFileSystemItem("file");
     });
 
-
 document
     .getElementById("files-new-folder")
     .addEventListener("click", () => {
         createFileSystemItem("folder");
     });
-
 
 document
     .getElementById("files-import")
@@ -990,34 +787,24 @@ document
         filesImportInput.click();
     });
 
-
-filesImportInput.addEventListener(
-    "change",
-    () => {
-        importRealFiles(
-            [...filesImportInput.files]
-        );
-    }
-);
-
+filesImportInput.addEventListener("change", () => {
+    importRealFiles([...filesImportInput.files]);
+});
 
 filesDownloadButton.addEventListener(
     "click",
     saveSelectedItemToComputer
 );
 
-
 filesRenameButton.addEventListener(
     "click",
     renameSelectedFileItem
 );
 
-
 filesDeleteButton.addEventListener(
     "click",
     deleteSelectedFileItem
 );
-
 
 document
     .getElementById("file-editor-close")
@@ -1025,32 +812,22 @@ document
         closeFileEditor();
     });
 
-
-fileEditorContent.addEventListener(
-    "input",
-    () => {
-        document.getElementById(
-            "file-editor-status"
-        ).textContent = "Unsaved changes";
-    }
-);
-
+fileEditorContent.addEventListener("input", () => {
+    document.getElementById(
+        "file-editor-status"
+    ).textContent = "Unsaved changes";
+});
 
 document
     .getElementById("file-editor-save")
     .addEventListener("click", () => {
-        const file =
-            findFileItem(editingFileId);
+        const file = findFileItem(editingFileId);
 
-        if (
-            !file ||
-            file.type !== "file"
-        ) {
+        if (!file || file.type !== "file") {
             return;
         }
 
-        file.content =
-            fileEditorContent.value;
+        file.content = fileEditorContent.value;
 
         saveFileSystem();
 
@@ -1059,133 +836,239 @@ document
         ).textContent = "Saved";
     });
 
-
-filesGrid.addEventListener(
-    "click",
-    (event) => {
-        if (event.target === filesGrid) {
-            setSelectedFile(null);
-        }
+filesGrid.addEventListener("click", (event) => {
+    if (event.target === filesGrid) {
+        setSelectedFile(null);
     }
-);
-
+});
 
 renderFileExplorer();
 
-
-/* WALLPAPERS */
+/* ===================================== */
+/* WALLPAPER GALLERY                     */
+/* ===================================== */
 
 const wallpapers = [
     {
         name: "Nova",
-
         background:
             "radial-gradient(circle at 18% 20%, rgba(255,255,255,.23), transparent 24%), linear-gradient(135deg, #2563eb, #7c3aed)"
     },
-
     {
-        name: "Sunset",
-
+        name: "Aqua",
         background:
-            "radial-gradient(circle at 75% 20%, rgba(253,224,71,.35), transparent 25%), linear-gradient(135deg, #f97316, #db2777 55%, #6d28d9)"
+            "radial-gradient(ellipse at 35% 20%, rgba(255,255,255,.9) 0 4%, transparent 22%), radial-gradient(ellipse at 65% 85%, rgba(45,212,191,.8), transparent 35%), linear-gradient(155deg, #38bdf8, #0369a1 55%, #0f766e)"
     },
-
     {
-        name: "Aurora",
-
+        name: "Jaguar",
         background:
-            "radial-gradient(circle at 30% 25%, rgba(52,211,153,.75), transparent 24%), radial-gradient(circle at 75% 75%, rgba(45,212,191,.32), transparent 30%), linear-gradient(145deg, #042f2e, #0f172a)"
+            "radial-gradient(circle at 22% 35%, #fb923c 0 2%, transparent 3%), radial-gradient(circle at 72% 24%, #fdba74 0 1.5%, transparent 2.5%), radial-gradient(circle at 58% 72%, #f97316 0 2%, transparent 3%), linear-gradient(140deg, #111827, #78350f 48%, #020617)"
     },
-
+    {
+        name: "Panther",
+        background:
+            "repeating-radial-gradient(ellipse at 50% 120%, transparent 0 11%, rgba(59,130,246,.24) 12% 14%), linear-gradient(145deg, #020617, #1e3a8a 50%, #0f172a)"
+    },
+    {
+        name: "Tiger",
+        background:
+            "radial-gradient(ellipse at 70% 18%, rgba(255,255,255,.68), transparent 18%), repeating-linear-gradient(112deg, transparent 0 8%, rgba(251,146,60,.2) 9% 12%), linear-gradient(135deg, #0f172a, #c2410c 52%, #fbbf24)"
+    },
+    {
+        name: "Leopard Aurora",
+        background:
+            "radial-gradient(ellipse at 30% 45%, rgba(34,211,238,.78), transparent 28%), radial-gradient(ellipse at 72% 58%, rgba(217,70,239,.72), transparent 32%), radial-gradient(ellipse at 48% 15%, rgba(255,255,255,.48), transparent 18%), linear-gradient(145deg, #020617, #172554 48%, #581c87)"
+    },
+    {
+        name: "Snow Aurora",
+        background:
+            "radial-gradient(ellipse at 32% 42%, rgba(125,211,252,.82), transparent 30%), radial-gradient(ellipse at 72% 60%, rgba(216,180,254,.76), transparent 34%), linear-gradient(145deg, #e0f2fe, #93c5fd 45%, #c4b5fd)"
+    },
+    {
+        name: "Lion Galaxy",
+        background:
+            "radial-gradient(circle at 25% 32%, #fff 0 1px, transparent 2px), radial-gradient(circle at 75% 42%, #fde68a 0 1px, transparent 2px), radial-gradient(ellipse at 52% 54%, rgba(249,115,22,.82), transparent 18%), radial-gradient(ellipse at 40% 48%, rgba(168,85,247,.7), transparent 32%), linear-gradient(140deg, #020617, #1e1b4b 60%, #4c1d95)"
+    },
+    {
+        name: "Mountain Lion",
+        background:
+            "radial-gradient(circle at 18% 18%, #fff 0 1px, transparent 2px), radial-gradient(circle at 82% 28%, #fff 0 1px, transparent 2px), radial-gradient(ellipse at 58% 58%, rgba(236,72,153,.74), transparent 22%), radial-gradient(ellipse at 38% 48%, rgba(59,130,246,.72), transparent 34%), linear-gradient(145deg, #030712, #312e81 58%, #831843)"
+    },
+    {
+        name: "Mavericks Wave",
+        background:
+            "radial-gradient(ellipse at 25% 92%, rgba(255,255,255,.92) 0 9%, transparent 10%), radial-gradient(ellipse at 42% 94%, rgba(186,230,253,.86) 0 18%, transparent 19%), radial-gradient(ellipse at 60% 110%, #0284c7 0 38%, transparent 39%), linear-gradient(165deg, #bae6fd, #0ea5e9 48%, #164e63)"
+    },
+    {
+        name: "Yosemite Peaks",
+        background:
+            "linear-gradient(145deg, transparent 0 45%, rgba(255,255,255,.6) 46% 48%, #64748b 49% 63%, #334155 64%), linear-gradient(155deg, #fda4af, #fdba74 45%, #7dd3fc)"
+    },
+    {
+        name: "El Capitan",
+        background:
+            "linear-gradient(112deg, transparent 0 52%, rgba(255,255,255,.3) 53% 55%, #78716c 56% 74%, #292524 75%), linear-gradient(165deg, #60a5fa, #fca5a5 52%, #f59e0b)"
+    },
+    {
+        name: "Sierra",
+        background:
+            "linear-gradient(155deg, transparent 0 47%, rgba(226,232,240,.88) 48% 53%, #475569 54% 72%, #1e293b 73%), linear-gradient(165deg, #38bdf8, #fca5a5 48%, #fb923c)"
+    },
+    {
+        name: "High Sierra",
+        background:
+            "linear-gradient(145deg, transparent 0 46%, rgba(255,255,255,.78) 47% 51%, #64748b 52% 68%, #334155 69%), radial-gradient(ellipse at 30% 85%, rgba(34,197,94,.72), transparent 28%), linear-gradient(165deg, #93c5fd, #fdba74 55%, #166534)"
+    },
+    {
+        name: "Mojave Day",
+        background:
+            "radial-gradient(ellipse at 52% 90%, #f59e0b 0 18%, transparent 19%), radial-gradient(ellipse at 48% 105%, #b45309 0 38%, transparent 39%), linear-gradient(170deg, #38bdf8, #fef3c7 58%, #fb923c)"
+    },
+    {
+        name: "Mojave Night",
+        background:
+            "radial-gradient(circle at 78% 18%, #f8fafc 0 4%, rgba(248,250,252,.25) 5%, transparent 12%), radial-gradient(ellipse at 52% 93%, #7c2d12 0 18%, transparent 19%), radial-gradient(ellipse at 48% 108%, #431407 0 38%, transparent 39%), linear-gradient(170deg, #020617, #172554 58%, #7c2d12)"
+    },
+    {
+        name: "Catalina",
+        background:
+            "linear-gradient(150deg, transparent 0 50%, #7c2d12 51% 65%, #431407 66%), radial-gradient(ellipse at 45% 80%, #fb923c 0 20%, transparent 21%), linear-gradient(165deg, #0ea5e9, #f9a8d4 52%, #f97316)"
+    },
+    {
+        name: "Big Sur",
+        background:
+            "radial-gradient(ellipse at 10% 80%, #f9a8d4 0 28%, transparent 29%), radial-gradient(ellipse at 88% 20%, #7dd3fc 0 32%, transparent 33%), radial-gradient(ellipse at 52% 52%, #c4b5fd 0 34%, transparent 35%), linear-gradient(135deg, #fb7185, #818cf8 52%, #38bdf8)"
+    },
+    {
+        name: "Monterey",
+        background:
+            "radial-gradient(ellipse at 8% 15%, #fb7185 0 28%, transparent 29%), radial-gradient(ellipse at 92% 88%, #38bdf8 0 32%, transparent 33%), conic-gradient(from 210deg at 50% 50%, #7c3aed, #ec4899, #f97316, #2563eb, #7c3aed)"
+    },
+    {
+        name: "Ventura",
+        background:
+            "radial-gradient(ellipse at 20% 50%, rgba(254,240,138,.82) 0 18%, transparent 19%), radial-gradient(ellipse at 48% 45%, #fb7185 0 28%, transparent 29%), radial-gradient(ellipse at 78% 52%, #8b5cf6 0 30%, transparent 31%), linear-gradient(115deg, #f97316, #ec4899 48%, #4f46e5)"
+    },
+    {
+        name: "Sonoma",
+        background:
+            "radial-gradient(ellipse at 50% 100%, #7c2d12 0 18%, transparent 19%), radial-gradient(ellipse at 25% 78%, #f97316 0 28%, transparent 29%), radial-gradient(ellipse at 78% 72%, #c026d3 0 30%, transparent 31%), linear-gradient(165deg, #1d4ed8, #7c3aed 42%, #f43f5e 72%, #f59e0b)"
+    },
+    {
+        name: "Sequoia",
+        background:
+            "radial-gradient(ellipse at 20% 90%, #064e3b 0 30%, transparent 31%), radial-gradient(ellipse at 70% 95%, #14532d 0 38%, transparent 39%), linear-gradient(108deg, transparent 0 43%, rgba(255,255,255,.75) 44% 47%, #475569 48% 60%, transparent 61%), linear-gradient(165deg, #38bdf8, #fef3c7 52%, #166534)"
+    },
+    {
+        name: "Tahoe",
+        background:
+            "radial-gradient(ellipse at 50% 92%, rgba(255,255,255,.82) 0 16%, transparent 17%), radial-gradient(ellipse at 22% 78%, #155e75 0 28%, transparent 29%), radial-gradient(ellipse at 78% 82%, #0f766e 0 30%, transparent 31%), linear-gradient(165deg, #7dd3fc, #bfdbfe 48%, #0e7490)"
+    },
     {
         name: "Deep Space",
-
         background:
             "radial-gradient(circle at 20% 25%, #818cf8 0 2px, transparent 3px), radial-gradient(circle at 70% 35%, #fff 0 1px, transparent 2px), radial-gradient(circle at 80% 75%, #c4b5fd 0 2px, transparent 3px), linear-gradient(145deg, #020617, #172554)"
     }
 ];
 
+function renderWallpaperChoices() {
+    const wallpaperGrid =
+        document.getElementById("wallpaper-grid");
 
-/* BOOT */
+    wallpaperGrid.replaceChildren();
+
+    wallpapers.forEach((wallpaper, index) => {
+        const button = document.createElement("button");
+        const name = document.createElement("span");
+
+        button.className = "wallpaper";
+        button.type = "button";
+        button.style.background = wallpaper.background;
+
+        button.setAttribute(
+            "aria-label",
+            `Use ${wallpaper.name} wallpaper`
+        );
+
+        button.addEventListener("click", () => {
+            changeWallpaper(index);
+        });
+
+        name.className = "wallpaper-name";
+        name.textContent = wallpaper.name;
+
+        button.append(name);
+        wallpaperGrid.append(button);
+    });
+}
+
+renderWallpaperChoices();
+
+/* ===================================== */
+/* BOOT AND LOGIN                        */
+/* ===================================== */
 
 window.addEventListener("load", () => {
-    const reducedMotion =
-        window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        ).matches;
-
-    const delay = reducedMotion ? 250 : 2500;
+    const delay = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches
+        ? 250
+        : 2500;
 
     window.setTimeout(() => {
         bootScreen.style.display = "none";
         loginScreen.style.display = "flex";
 
-        document
-            .getElementById("username")
-            .focus();
+        document.getElementById("username").focus();
     }, delay);
 });
 
+loginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-/* LOGIN */
+    const username = document
+        .getElementById("username")
+        .value.trim();
 
-loginForm.addEventListener(
-    "submit",
-    (event) => {
-        event.preventDefault();
+    const passwordInput =
+        document.getElementById("password");
 
-        const username =
-            document
-                .getElementById("username")
-                .value.trim();
+    if (!username || !passwordInput.value) {
+        loginError.textContent =
+            "Enter both a username and password.";
 
-        const passwordInput =
-            document.getElementById("password");
-
-        if (
-            !username ||
-            !passwordInput.value
-        ) {
-            loginError.textContent =
-                "Enter both a username and password.";
-
-            return;
-        }
-
-        loginError.textContent = "";
-        passwordInput.value = "";
-
-        document.getElementById(
-            "start-username"
-        ).textContent = username;
-
-        loginScreen.style.display = "none";
-        desktop.style.display = "block";
+        return;
     }
-);
 
+    loginError.textContent = "";
+    passwordInput.value = "";
 
-/* WINDOWS */
+    document.getElementById(
+        "start-username"
+    ).textContent = username;
+
+    loginScreen.style.display = "none";
+    desktop.style.display = "block";
+});
+
+/* ===================================== */
+/* WINDOWS                               */
+/* ===================================== */
 
 function bringToFront(appWindow) {
     windowLayer += 1;
     appWindow.style.zIndex = windowLayer;
 }
 
-
 function openApp(appId) {
-    const appWindow =
-        document.getElementById(appId);
+    const appWindow = document.getElementById(appId);
 
     if (!appWindow) {
         return;
     }
 
-    if (
-        appWindow.style.display !== "block"
-    ) {
-        const offset =
-            (openedWindowCount % 5) * 28;
+    if (appWindow.style.display !== "block") {
+        const offset = (openedWindowCount % 5) * 28;
 
         appWindow.style.left =
             `${Math.min(
@@ -1208,25 +1091,19 @@ function openApp(appId) {
     closeStartMenu();
 }
 
-
 function closeApp(appId) {
-    const appWindow =
-        document.getElementById(appId);
+    const appWindow = document.getElementById(appId);
 
     if (appWindow) {
         appWindow.style.display = "none";
     }
 }
 
-
 function getOpenWindows() {
-    return [
-        ...document.querySelectorAll(".window")
-    ]
+    return [...document.querySelectorAll(".window")]
         .filter(
             (appWindow) =>
-                appWindow.style.display ===
-                "block"
+                appWindow.style.display === "block"
         )
         .sort(
             (a, b) =>
@@ -1235,51 +1112,37 @@ function getOpenWindows() {
         );
 }
 
-
 function closeActiveWindow() {
-    const activeWindow =
-        getOpenWindows()[0];
+    const activeWindow = getOpenWindows()[0];
 
     if (activeWindow) {
         activeWindow.style.display = "none";
     }
 }
 
-
 function showNovaPrompt(title, message) {
-    document.getElementById(
-        "prompt-title"
-    ).textContent = title;
+    document.getElementById("prompt-title").textContent =
+        title;
 
-    document.getElementById(
-        "prompt-heading"
-    ).textContent = title;
+    document.getElementById("prompt-heading").textContent =
+        title;
 
-    document.getElementById(
-        "prompt-message"
-    ).textContent = message;
+    document.getElementById("prompt-message").textContent =
+        message;
 
     openApp("system-prompt");
 }
-
-
-/* START MENU */
 
 function closeStartMenu() {
     startMenu.classList.remove("open");
 }
 
-
 function toggleStartMenu() {
     closeTopMenus();
-
     startMenu.classList.toggle("open");
 
-    if (
-        startMenu.classList.contains("open")
-    ) {
+    if (startMenu.classList.contains("open")) {
         startSearch.value = "";
-
         filterStartApps();
 
         window.setTimeout(() => {
@@ -1288,12 +1151,10 @@ function toggleStartMenu() {
     }
 }
 
-
 function openAppFromStart(appId) {
     closeStartMenu();
     openApp(appId);
 }
-
 
 function lockNovaOS() {
     closeStartMenu();
@@ -1308,183 +1169,137 @@ function lockNovaOS() {
     desktop.style.display = "none";
     loginScreen.style.display = "flex";
 
-    document.getElementById(
-        "password"
-    ).value = "";
-
-    document.getElementById(
-        "password"
-    ).focus();
+    document.getElementById("password").value = "";
+    document.getElementById("password").focus();
 }
 
+document.addEventListener("pointerdown", (event) => {
+    const appWindow = event.target.closest(".window");
 
-/* WINDOW FOCUS */
-
-document.addEventListener(
-    "pointerdown",
-    (event) => {
-        const appWindow =
-            event.target.closest(".window");
-
-        if (appWindow) {
-            bringToFront(appWindow);
-        }
+    if (appWindow) {
+        bringToFront(appWindow);
     }
-);
+});
 
+document.querySelectorAll(".window").forEach((appWindow) => {
+    const titlebar = appWindow.querySelector(".titlebar");
 
-/* WINDOW DRAGGING */
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
 
-document
-    .querySelectorAll(".window")
-    .forEach((appWindow) => {
-        const titlebar =
-            appWindow.querySelector(".titlebar");
-
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-
-        titlebar.addEventListener(
-            "pointerdown",
-            (event) => {
-                if (
-                    event.target.closest("button") ||
-                    window.innerWidth <= 650
-                ) {
-                    return;
-                }
-
-                const bounds =
-                    appWindow.getBoundingClientRect();
-
-                dragOffsetX =
-                    event.clientX - bounds.left;
-
-                dragOffsetY =
-                    event.clientY - bounds.top;
-
-                titlebar.setPointerCapture(
-                    event.pointerId
-                );
-
-                bringToFront(appWindow);
-            }
-        );
-
-        titlebar.addEventListener(
-            "pointermove",
-            (event) => {
-                if (
-                    !titlebar.hasPointerCapture(
-                        event.pointerId
-                    )
-                ) {
-                    return;
-                }
-
-                const maxLeft = Math.max(
-                    0,
-                    window.innerWidth -
-                        appWindow.offsetWidth
-                );
-
-                const maxTop = Math.max(
-                    34,
-                    window.innerHeight - 80
-                );
-
-                const nextLeft = Math.min(
-                    Math.max(
-                        0,
-                        event.clientX -
-                            dragOffsetX
-                    ),
-                    maxLeft
-                );
-
-                const nextTop = Math.min(
-                    Math.max(
-                        34,
-                        event.clientY -
-                            dragOffsetY
-                    ),
-                    maxTop
-                );
-
-                appWindow.style.left =
-                    `${nextLeft}px`;
-
-                appWindow.style.top =
-                    `${nextTop}px`;
-            }
-        );
-    });
-
-
-/* NOVA BROWSER */
-
-browserForm.addEventListener(
-    "submit",
-    (event) => {
-        event.preventDefault();
-
-        const query =
-            browserSearch.value.trim();
-
-        if (!query) {
-            browserSearch.focus();
+    titlebar.addEventListener("pointerdown", (event) => {
+        if (
+            event.target.closest("button") ||
+            window.innerWidth <= 650
+        ) {
             return;
         }
 
-        const looksLikeUrl =
-            query.includes(".") &&
-            !query.includes(" ");
+        const bounds = appWindow.getBoundingClientRect();
 
-        const target = looksLikeUrl
-            ? /^https?:\/\//i.test(query)
-                ? query
-                : `https://${query}`
-            : `https://www.google.com/search?q=${encodeURIComponent(
-                  query
-              )}`;
+        dragOffsetX = event.clientX - bounds.left;
+        dragOffsetY = event.clientY - bounds.top;
 
-        window.open(
-            target,
-            "_blank",
-            "noopener,noreferrer"
+        titlebar.setPointerCapture(event.pointerId);
+
+        bringToFront(appWindow);
+    });
+
+    titlebar.addEventListener("pointermove", (event) => {
+        if (
+            !titlebar.hasPointerCapture(event.pointerId)
+        ) {
+            return;
+        }
+
+        const maxLeft = Math.max(
+            0,
+            window.innerWidth - appWindow.offsetWidth
         );
+
+        const maxTop = Math.max(
+            34,
+            window.innerHeight - 80
+        );
+
+        const nextLeft = Math.min(
+            Math.max(
+                0,
+                event.clientX - dragOffsetX
+            ),
+            maxLeft
+        );
+
+        const nextTop = Math.min(
+            Math.max(
+                34,
+                event.clientY - dragOffsetY
+            ),
+            maxTop
+        );
+
+        appWindow.style.left = `${nextLeft}px`;
+        appWindow.style.top = `${nextTop}px`;
+    });
+});
+
+/* ===================================== */
+/* BROWSER                               */
+/* ===================================== */
+
+browserForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const query = browserSearch.value.trim();
+
+    if (!query) {
+        browserSearch.focus();
+        return;
     }
-);
 
+    const looksLikeUrl =
+        query.includes(".") && !query.includes(" ");
 
-/* APP STORE */
+    const target = looksLikeUrl
+        ? /^https?:\/\//i.test(query)
+            ? query
+            : `https://${query}`
+        : `https://www.google.com/search?q=${encodeURIComponent(
+              query
+          )}`;
+
+    window.open(
+        target,
+        "_blank",
+        "noopener,noreferrer"
+    );
+});
+
+/* ===================================== */
+/* APP STORE AND START MENU              */
+/* ===================================== */
 
 function saveInstalledApps() {
     try {
         localStorage.setItem(
             "novaInstalledApps",
-            JSON.stringify([
-                ...installedApps
-            ])
+            JSON.stringify([...installedApps])
         );
     } catch {
-        // NovaOS still works without browser storage.
+        // NovaOS still works if browser storage is unavailable.
     }
 }
-
 
 function syncInstalledApps() {
     document
         .querySelectorAll("[data-install-app]")
         .forEach((button) => {
-            const appId =
-                button.dataset.installApp;
+            const appId = button.dataset.installApp;
+            const isInstalled = installedApps.has(appId);
 
-            const isInstalled =
-                installedApps.has(appId);
-
-            button.textContent =
-                isInstalled ? "Open" : "Install";
+            button.textContent = isInstalled
+                ? "Open"
+                : "Install";
 
             button.classList.toggle(
                 "installed",
@@ -1495,15 +1310,13 @@ function syncInstalledApps() {
     document
         .querySelectorAll("[data-installed-app]")
         .forEach((button) => {
-            button.hidden =
-                !installedApps.has(
-                    button.dataset.installedApp
-                );
+            button.hidden = !installedApps.has(
+                button.dataset.installedApp
+            );
         });
 
     filterStartApps();
 }
-
 
 function installOrOpenApp(appId) {
     if (installedApps.has(appId)) {
@@ -1528,7 +1341,6 @@ function installOrOpenApp(appId) {
     );
 }
 
-
 function openInstalledApp(appId) {
     if (installedApps.has(appId)) {
         openAppFromStart(appId);
@@ -1537,142 +1349,97 @@ function openInstalledApp(appId) {
     }
 }
 
-
 document
     .querySelectorAll("[data-install-app]")
     .forEach((button) => {
-        button.addEventListener(
-            "click",
-            () => {
-                installOrOpenApp(
-                    button.dataset.installApp
-                );
-            }
-        );
+        button.addEventListener("click", () => {
+            installOrOpenApp(
+                button.dataset.installApp
+            );
+        });
     });
 
-
-/* START MENU SEARCH */
-
 function filterStartApps() {
-    const query =
-        startSearch.value
-            .trim()
-            .toLowerCase();
+    const query = startSearch.value
+        .trim()
+        .toLowerCase();
 
     let visibleApps = 0;
 
+    document.querySelectorAll(".start-app").forEach((button) => {
+        const requiredInstall =
+            button.dataset.installedApp;
+
+        const isAvailable =
+            !requiredInstall ||
+            installedApps.has(requiredInstall);
+
+        const matches =
+            button.dataset.startName.includes(query);
+
+        const shouldShow =
+            isAvailable && matches;
+
+        button.hidden = !shouldShow;
+
+        if (shouldShow) {
+            visibleApps += 1;
+        }
+    });
+
+    document.getElementById("start-empty").hidden =
+        visibleApps !== 0;
+}
+
+startSearch.addEventListener("input", filterStartApps);
+
+storeSearch.addEventListener("input", () => {
+    const query = storeSearch.value
+        .trim()
+        .toLowerCase();
+
+    let visibleApps = 0;
+    let visibleAvailableApps = 0;
+    let visibleSoonApps = 0;
+
     document
-        .querySelectorAll(".start-app")
-        .forEach((button) => {
-            const requiredInstall =
-                button.dataset.installedApp;
-
-            const isAvailable =
-                !requiredInstall ||
-                installedApps.has(
-                    requiredInstall
-                );
-
+        .querySelectorAll(".store-card, .soon-card")
+        .forEach((card) => {
             const matches =
-                button.dataset.startName.includes(
-                    query
-                );
+                card.dataset.storeName.includes(query);
 
-            const shouldShow =
-                isAvailable && matches;
+            card.hidden = !matches;
 
-            button.hidden = !shouldShow;
-
-            if (shouldShow) {
+            if (matches) {
                 visibleApps += 1;
+
+                if (card.classList.contains("store-card")) {
+                    visibleAvailableApps += 1;
+                } else {
+                    visibleSoonApps += 1;
+                }
             }
         });
 
-    document.getElementById(
-        "start-empty"
-    ).hidden = visibleApps !== 0;
-}
+    document.querySelector(
+        ".store-section-title"
+    ).hidden = visibleAvailableApps === 0;
 
+    document.querySelector(
+        ".soon-section"
+    ).hidden = visibleSoonApps === 0;
 
-startSearch.addEventListener(
-    "input",
-    filterStartApps
-);
-
-
-/* STORE SEARCH */
-
-storeSearch.addEventListener(
-    "input",
-    () => {
-        const query =
-            storeSearch.value
-                .trim()
-                .toLowerCase();
-
-        let visibleApps = 0;
-        let visibleAvailableApps = 0;
-        let visibleSoonApps = 0;
-
-        document
-            .querySelectorAll(
-                ".store-card, .soon-card"
-            )
-            .forEach((card) => {
-                const matches =
-                    card.dataset.storeName.includes(
-                        query
-                    );
-
-                card.hidden = !matches;
-
-                if (matches) {
-                    visibleApps += 1;
-
-                    if (
-                        card.classList.contains(
-                            "store-card"
-                        )
-                    ) {
-                        visibleAvailableApps += 1;
-                    } else {
-                        visibleSoonApps += 1;
-                    }
-                }
-            });
-
-        document.querySelector(
-            ".store-section-title"
-        ).hidden =
-            visibleAvailableApps === 0;
-
-        document.querySelector(
-            ".soon-section"
-        ).hidden =
-            visibleSoonApps === 0;
-
-        document.getElementById(
-            "store-empty"
-        ).hidden =
-            visibleApps !== 0;
-    }
-);
-
-
-/* LOAD INSTALLED APPS */
+    document.getElementById("store-empty").hidden =
+        visibleApps !== 0;
+});
 
 try {
     const savedApps = JSON.parse(
-        localStorage.getItem(
-            "novaInstalledApps"
-        ) || "[]"
+        localStorage.getItem("novaInstalledApps") || "[]"
     );
 
     installedApps = new Set(
-        Array.isArray(savedApps)
-            ? savedApps
-            : []
+        Array.isArray(savedApps) ? savedApps : []
     );
 } catch {
     installedApps = new Set();
@@ -1680,8 +1447,9 @@ try {
 
 syncInstalledApps();
 
-
-/* NOTES */
+/* ===================================== */
+/* NOTES                                 */
+/* ===================================== */
 
 try {
     notesTextarea.value =
@@ -1690,48 +1458,36 @@ try {
     notesTextarea.value = "";
 }
 
+notesTextarea.addEventListener("input", () => {
+    const status = document.getElementById("notes-status");
 
-notesTextarea.addEventListener(
-    "input",
-    () => {
-        const status =
-            document.getElementById(
-                "notes-status"
+    status.textContent = "Saving…";
+
+    window.clearTimeout(notesSaveTimer);
+
+    notesSaveTimer = window.setTimeout(() => {
+        try {
+            localStorage.setItem(
+                "novaNotes",
+                notesTextarea.value
             );
 
-        status.textContent = "Saving…";
+            status.textContent = "Saved";
+        } catch {
+            status.textContent = "Could not save";
+        }
+    }, 350);
+});
 
-        window.clearTimeout(notesSaveTimer);
+/* ===================================== */
+/* PAINT                                 */
+/* ===================================== */
 
-        notesSaveTimer =
-            window.setTimeout(() => {
-                try {
-                    localStorage.setItem(
-                        "novaNotes",
-                        notesTextarea.value
-                    );
-
-                    status.textContent = "Saved";
-                } catch {
-                    status.textContent =
-                        "Could not save";
-                }
-            }, 350);
-    }
-);
-
-
-/* PAINT */
-
-const paintContext =
-    paintCanvas.getContext("2d");
-
+const paintContext = paintCanvas.getContext("2d");
 let isPainting = false;
-
 
 function resetPaintCanvas() {
     paintContext.save();
-
     paintContext.fillStyle = "#ffffff";
 
     paintContext.fillRect(
@@ -1744,10 +1500,8 @@ function resetPaintCanvas() {
     paintContext.restore();
 }
 
-
 function getPaintPoint(event) {
-    const bounds =
-        paintCanvas.getBoundingClientRect();
+    const bounds = paintCanvas.getBoundingClientRect();
 
     return {
         x:
@@ -1760,77 +1514,48 @@ function getPaintPoint(event) {
     };
 }
 
+paintCanvas.addEventListener("pointerdown", (event) => {
+    isPainting = true;
 
-paintCanvas.addEventListener(
-    "pointerdown",
-    (event) => {
-        isPainting = true;
+    paintCanvas.setPointerCapture(event.pointerId);
 
-        paintCanvas.setPointerCapture(
-            event.pointerId
-        );
+    const point = getPaintPoint(event);
 
-        const point =
-            getPaintPoint(event);
+    paintContext.fillStyle = paintColour.value;
+    paintContext.beginPath();
 
-        paintContext.fillStyle =
-            paintColour.value;
+    paintContext.arc(
+        point.x,
+        point.y,
+        Number(paintSize.value) / 2,
+        0,
+        Math.PI * 2
+    );
 
-        paintContext.beginPath();
+    paintContext.fill();
+    paintContext.beginPath();
+    paintContext.moveTo(point.x, point.y);
+});
 
-        paintContext.arc(
-            point.x,
-            point.y,
-            Number(paintSize.value) / 2,
-            0,
-            Math.PI * 2
-        );
-
-        paintContext.fill();
-        paintContext.beginPath();
-
-        paintContext.moveTo(
-            point.x,
-            point.y
-        );
+paintCanvas.addEventListener("pointermove", (event) => {
+    if (!isPainting) {
+        return;
     }
-);
 
+    const point = getPaintPoint(event);
 
-paintCanvas.addEventListener(
-    "pointermove",
-    (event) => {
-        if (!isPainting) {
-            return;
-        }
-
-        const point =
-            getPaintPoint(event);
-
-        paintContext.lineTo(
-            point.x,
-            point.y
-        );
-
-        paintContext.strokeStyle =
-            paintColour.value;
-
-        paintContext.lineWidth =
-            Number(paintSize.value);
-
-        paintContext.lineCap = "round";
-        paintContext.lineJoin = "round";
-
-        paintContext.stroke();
-    }
-);
-
+    paintContext.lineTo(point.x, point.y);
+    paintContext.strokeStyle = paintColour.value;
+    paintContext.lineWidth = Number(paintSize.value);
+    paintContext.lineCap = "round";
+    paintContext.lineJoin = "round";
+    paintContext.stroke();
+});
 
 function stopPainting() {
     isPainting = false;
     paintContext.closePath();
 }
-
 
 paintCanvas.addEventListener(
     "pointerup",
@@ -1842,14 +1567,9 @@ paintCanvas.addEventListener(
     stopPainting
 );
 
-
 document
     .getElementById("paint-clear")
-    .addEventListener(
-        "click",
-        resetPaintCanvas
-    );
-
+    .addEventListener("click", resetPaintCanvas);
 
 document
     .getElementById("paint-save")
@@ -1857,22 +1577,19 @@ document
         const downloadLink =
             document.createElement("a");
 
-        downloadLink.download =
-            "nova-paint.png";
+        downloadLink.download = "nova-paint.png";
 
         downloadLink.href =
-            paintCanvas.toDataURL(
-                "image/png"
-            );
+            paintCanvas.toDataURL("image/png");
 
         downloadLink.click();
     });
 
-
 resetPaintCanvas();
 
-
-/* CALCULATOR */
+/* ===================================== */
+/* CALCULATOR                            */
+/* ===================================== */
 
 function updateCalculatorDisplay(value) {
     calculatorDisplay.value =
@@ -1881,138 +1598,104 @@ function updateCalculatorDisplay(value) {
             .replaceAll("/", "÷") || "0";
 }
 
+document
+    .querySelectorAll("[data-calculator-value]")
+    .forEach((button) => {
+        button.addEventListener("click", () => {
+            if (calculatorDisplay.value === "Error") {
+                calculatorExpression = "";
+            }
+
+            calculatorExpression +=
+                button.dataset.calculatorValue;
+
+            updateCalculatorDisplay(
+                calculatorExpression
+            );
+        });
+    });
 
 document
-    .querySelectorAll(
-        "[data-calculator-value]"
-    )
+    .querySelectorAll("[data-calculator-action]")
     .forEach((button) => {
-        button.addEventListener(
-            "click",
-            () => {
-                if (
-                    calculatorDisplay.value ===
-                    "Error"
-                ) {
-                    calculatorExpression = "";
-                }
+        button.addEventListener("click", () => {
+            const action =
+                button.dataset.calculatorAction;
 
-                calculatorExpression +=
-                    button.dataset.calculatorValue;
+            if (action === "clear") {
+                calculatorExpression = "";
 
                 updateCalculatorDisplay(
                     calculatorExpression
                 );
+
+                return;
             }
-        );
-    });
 
+            if (action === "delete") {
+                calculatorExpression =
+                    calculatorExpression.slice(0, -1);
 
-document
-    .querySelectorAll(
-        "[data-calculator-action]"
-    )
-    .forEach((button) => {
-        button.addEventListener(
-            "click",
-            () => {
-                const action =
-                    button.dataset.calculatorAction;
+                updateCalculatorDisplay(
+                    calculatorExpression
+                );
 
-                if (action === "clear") {
+                return;
+            }
+
+            if (action === "equals") {
+                const isSafeExpression =
+                    /^[0-9+\-*/.() ]+$/.test(
+                        calculatorExpression
+                    );
+
+                if (
+                    !isSafeExpression ||
+                    !calculatorExpression
+                ) {
+                    calculatorDisplay.value = "Error";
                     calculatorExpression = "";
+                    return;
+                }
+
+                try {
+                    const result = Function(
+                        `"use strict"; return (${calculatorExpression})`
+                    )();
+
+                    if (!Number.isFinite(result)) {
+                        throw new Error("Invalid result");
+                    }
+
+                    calculatorExpression = String(
+                        Number(result.toFixed(10))
+                    );
 
                     updateCalculatorDisplay(
                         calculatorExpression
                     );
-
-                    return;
-                }
-
-                if (action === "delete") {
-                    calculatorExpression =
-                        calculatorExpression.slice(
-                            0,
-                            -1
-                        );
-
-                    updateCalculatorDisplay(
-                        calculatorExpression
-                    );
-
-                    return;
-                }
-
-                if (action === "equals") {
-                    const isSafeExpression =
-                        /^[0-9+\-*/.() ]+$/.test(
-                            calculatorExpression
-                        );
-
-                    if (
-                        !isSafeExpression ||
-                        !calculatorExpression
-                    ) {
-                        calculatorDisplay.value =
-                            "Error";
-
-                        calculatorExpression = "";
-
-                        return;
-                    }
-
-                    try {
-                        const result = Function(
-                            `"use strict"; return (${calculatorExpression})`
-                        )();
-
-                        if (
-                            !Number.isFinite(result)
-                        ) {
-                            throw new Error(
-                                "Invalid result"
-                            );
-                        }
-
-                        calculatorExpression =
-                            String(
-                                Number(
-                                    result.toFixed(10)
-                                )
-                            );
-
-                        updateCalculatorDisplay(
-                            calculatorExpression
-                        );
-                    } catch {
-                        calculatorDisplay.value =
-                            "Error";
-
-                        calculatorExpression = "";
-                    }
+                } catch {
+                    calculatorDisplay.value = "Error";
+                    calculatorExpression = "";
                 }
             }
-        );
+        });
     });
 
-
-/* CLOCK */
+/* ===================================== */
+/* CLOCK AND WALLPAPER                   */
+/* ===================================== */
 
 function updateClock() {
     const now = new Date();
 
-    document.getElementById(
-        "clock"
-    ).textContent =
+    document.getElementById("clock").textContent =
         now.toLocaleString([], {
             weekday: "short",
             hour: "2-digit",
             minute: "2-digit"
         });
 }
-
-
-/* WALLPAPER */
 
 function changeWallpaper(index) {
     const selected = wallpapers[index];
@@ -2021,28 +1704,23 @@ function changeWallpaper(index) {
         return;
     }
 
-    desktop.style.background =
-        selected.background;
-
+    desktop.style.background = selected.background;
     desktop.style.backgroundSize = "cover";
 
     currentWallpaperIndex = index;
 
     document.getElementById(
         "wallpaper-status"
-    ).textContent =
-        `Wallpaper: ${selected.name}`;
+    ).textContent = `Wallpaper: ${selected.name}`;
 
     document
         .querySelectorAll(".wallpaper")
-        .forEach(
-            (button, buttonIndex) => {
-                button.classList.toggle(
-                    "selected",
-                    buttonIndex === index
-                );
-            }
-        );
+        .forEach((button, buttonIndex) => {
+            button.classList.toggle(
+                "selected",
+                buttonIndex === index
+            );
+        });
 
     try {
         localStorage.setItem(
@@ -2050,12 +1728,13 @@ function changeWallpaper(index) {
             String(index)
         );
     } catch {
-        // NovaOS still works without browser storage.
+        // NovaOS still works when browser storage is unavailable.
     }
 }
 
-
-/* TOP MENUS */
+/* ===================================== */
+/* TOP MENUS                             */
+/* ===================================== */
 
 function closeTopMenus() {
     document
@@ -2063,211 +1742,164 @@ function closeTopMenus() {
         .forEach((menu) => {
             menu.classList.remove("open");
 
-            menu.querySelector(
-                ".menu-button"
-            ).setAttribute(
-                "aria-expanded",
-                "false"
-            );
+            menu
+                .querySelector(".menu-button")
+                .setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
         });
 }
-
 
 document
     .querySelectorAll(".menu-button")
     .forEach((button) => {
-        button.addEventListener(
-            "click",
-            (event) => {
-                event.stopPropagation();
+        button.addEventListener("click", (event) => {
+            event.stopPropagation();
 
-                const menu =
-                    button.closest(".top-menu");
+            const menu = button.closest(".top-menu");
 
-                const shouldOpen =
-                    !menu.classList.contains(
-                        "open"
-                    );
+            const shouldOpen =
+                !menu.classList.contains("open");
 
-                closeStartMenu();
-                closeTopMenus();
+            closeStartMenu();
+            closeTopMenus();
 
-                if (shouldOpen) {
-                    menu.classList.add("open");
+            if (shouldOpen) {
+                menu.classList.add("open");
 
-                    button.setAttribute(
-                        "aria-expanded",
-                        "true"
-                    );
-                }
+                button.setAttribute(
+                    "aria-expanded",
+                    "true"
+                );
             }
-        );
+        });
     });
 
-
-document.addEventListener(
-    "focusin",
-    (event) => {
-        if (
-            event.target instanceof
-            HTMLInputElement
-        ) {
-            lastFocusedInput =
-                event.target;
-        }
+document.addEventListener("focusin", (event) => {
+    if (event.target instanceof HTMLInputElement) {
+        lastFocusedInput = event.target;
     }
-);
-
+});
 
 document
-    .querySelectorAll(
-        ".menu-dropdown [data-action]"
-    )
+    .querySelectorAll(".menu-dropdown [data-action]")
     .forEach((button) => {
-        button.addEventListener(
-            "click",
-            async () => {
-                const action =
-                    button.dataset.action;
+        button.addEventListener("click", async () => {
+            const action = button.dataset.action;
 
-                closeTopMenus();
+            closeTopMenus();
 
-                if (action === "open-files") {
-                    openApp("files");
-                }
+            if (action === "open-files") {
+                openApp("files");
+            }
 
-                if (action === "open-browser") {
-                    openApp("browser");
-                }
+            if (action === "open-browser") {
+                openApp("browser");
+            }
 
-                if (action === "open-settings") {
-                    openApp("settings");
-                }
+            if (action === "open-settings") {
+                openApp("settings");
+            }
 
-                if (action === "open-store") {
-                    openApp("store");
-                }
+            if (action === "open-store") {
+                openApp("store");
+            }
 
-                if (action === "close-active") {
-                    closeActiveWindow();
-                }
+            if (action === "close-active") {
+                closeActiveWindow();
+            }
 
-                if (
-                    action === "next-wallpaper"
-                ) {
-                    changeWallpaper(
-                        (
-                            currentWallpaperIndex +
-                            1
-                        ) % wallpapers.length
-                    );
-                }
+            if (action === "next-wallpaper") {
+                changeWallpaper(
+                    (currentWallpaperIndex + 1) %
+                        wallpapers.length
+                );
+            }
 
-                if (action === "lock") {
-                    lockNovaOS();
-                }
+            if (action === "lock") {
+                lockNovaOS();
+            }
 
-                if (action === "select-all") {
-                    const activeField =
-                        lastFocusedInput;
-
-                    if (
-                        activeField instanceof
-                        HTMLInputElement
-                    ) {
-                        activeField.focus();
-                        activeField.select();
-                    } else {
-                        showNovaPrompt(
-                            "Edit",
-                            "Click inside a text field first, then choose Select All."
-                        );
-                    }
-                }
+            if (action === "select-all") {
+                const activeField = lastFocusedInput;
 
                 if (
-                    action === "clear-field"
+                    activeField instanceof HTMLInputElement
                 ) {
-                    const activeField =
-                        lastFocusedInput;
-
-                    if (
-                        activeField instanceof
-                        HTMLInputElement
-                    ) {
-                        activeField.value = "";
-                        activeField.focus();
-                    } else {
-                        showNovaPrompt(
-                            "Edit",
-                            "Click inside a text field first, then choose Clear Field."
-                        );
-                    }
-                }
-
-                if (action === "fullscreen") {
-                    try {
-                        if (
-                            document.fullscreenElement
-                        ) {
-                            await document.exitFullscreen();
-                        } else {
-                            await document.documentElement.requestFullscreen();
-                        }
-                    } catch {
-                        showNovaPrompt(
-                            "Full Screen",
-                            "Your browser did not allow NovaOS to enter full screen."
-                        );
-                    }
-                }
-
-                if (action === "shortcuts") {
+                    activeField.focus();
+                    activeField.select();
+                } else {
                     showNovaPrompt(
-                        "Keyboard Shortcuts",
-                        "Esc — close the active window\n" +
-                            "Ctrl+A — select text\n" +
-                            "Enter — submit login or browser search"
-                    );
-                }
-
-                if (action === "about") {
-                    showNovaPrompt(
-                        "About NovaOS",
-                        "NovaOS is a browser-based desktop experience built with HTML, CSS, and JavaScript."
+                        "Edit",
+                        "Click inside a text field first, then choose Select All."
                     );
                 }
             }
-        );
+
+            if (action === "clear-field") {
+                const activeField = lastFocusedInput;
+
+                if (
+                    activeField instanceof HTMLInputElement
+                ) {
+                    activeField.value = "";
+                    activeField.focus();
+                } else {
+                    showNovaPrompt(
+                        "Edit",
+                        "Click inside a text field first, then choose Clear Field."
+                    );
+                }
+            }
+
+            if (action === "fullscreen") {
+                try {
+                    if (document.fullscreenElement) {
+                        await document.exitFullscreen();
+                    } else {
+                        await document.documentElement.requestFullscreen();
+                    }
+                } catch {
+                    showNovaPrompt(
+                        "Full Screen",
+                        "Your browser did not allow NovaOS to enter full screen."
+                    );
+                }
+            }
+
+            if (action === "shortcuts") {
+                showNovaPrompt(
+                    "Keyboard Shortcuts",
+                    "Esc — close the active window\nCtrl+A — select text\nEnter — submit login or browser search"
+                );
+            }
+
+            if (action === "about") {
+                showNovaPrompt(
+                    "About NovaOS",
+                    "NovaOS is a browser-based desktop experience built with HTML, CSS, and JavaScript."
+                );
+            }
+        });
     });
 
-
-/* CLOSE MENUS */
-
-document.addEventListener(
-    "click",
-    (event) => {
-        if (
-            !event.target.closest(".top-menu")
-        ) {
-            closeTopMenus();
-        }
-
-        if (
-            !event.target.closest(
-                "#start-menu"
-            ) &&
-            !event.target.closest(
-                ".start-button"
-            )
-        ) {
-            closeStartMenu();
-        }
+document.addEventListener("click", (event) => {
+    if (!event.target.closest(".top-menu")) {
+        closeTopMenus();
     }
-);
 
+    if (
+        !event.target.closest("#start-menu") &&
+        !event.target.closest(".start-button")
+    ) {
+        closeStartMenu();
+    }
+});
 
-/* LOAD SAVED WALLPAPER */
+/* ===================================== */
+/* RESTORE SAVED WALLPAPER               */
+/* ===================================== */
 
 try {
     const savedWallpaper = Number(
@@ -2286,35 +1918,26 @@ try {
     changeWallpaper(0);
 }
 
+/* ===================================== */
+/* KEYBOARD AND CLOCK                    */
+/* ===================================== */
 
-/* ESCAPE KEY */
-
-document.addEventListener(
-    "keydown",
-    (event) => {
-        if (event.key !== "Escape") {
-            return;
-        }
-
-        const openMenu =
-            document.querySelector(
-                ".top-menu.open"
-            );
-
-        if (openMenu) {
-            closeTopMenus();
-        } else if (
-            startMenu.classList.contains("open")
-        ) {
-            closeStartMenu();
-        } else {
-            closeActiveWindow();
-        }
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+        return;
     }
-);
 
+    const openMenu =
+        document.querySelector(".top-menu.open");
 
-/* START CLOCK */
+    if (openMenu) {
+        closeTopMenus();
+    } else if (startMenu.classList.contains("open")) {
+        closeStartMenu();
+    } else {
+        closeActiveWindow();
+    }
+});
 
 window.setInterval(updateClock, 1000);
-updateClock();s
+updateClock();

@@ -38,9 +38,6 @@ button {
     display: none !important;
 }
 
-
-/* BOOT SCREEN */
-
 #boot {
     position: fixed;
     z-index: 9999;
@@ -51,11 +48,7 @@ button {
     justify-content: center;
     color: white;
     background:
-        radial-gradient(
-            circle at 50% 35%,
-            rgba(99, 102, 241, 0.32),
-            transparent 30%
-        ),
+        radial-gradient(circle at 50% 35%, rgba(99, 102, 241, 0.32), transparent 30%),
         #060914;
 }
 
@@ -69,11 +62,7 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 28px;
     color: #c4b5fd;
-    background: linear-gradient(
-        145deg,
-        rgba(255, 255, 255, 0.16),
-        rgba(255, 255, 255, 0.04)
-    );
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
     box-shadow: 0 24px 80px rgba(88, 72, 232, 0.34);
     font-size: 64px;
 }
@@ -114,9 +103,6 @@ button {
     }
 }
 
-
-/* LOGIN */
-
 #login {
     position: fixed;
     z-index: 9998;
@@ -126,16 +112,8 @@ button {
     justify-content: center;
     padding: 20px;
     background:
-        radial-gradient(
-            circle at 20% 20%,
-            rgba(37, 99, 235, 0.38),
-            transparent 32%
-        ),
-        radial-gradient(
-            circle at 85% 80%,
-            rgba(124, 58, 237, 0.4),
-            transparent 35%
-        ),
+        radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.38), transparent 32%),
+        radial-gradient(circle at 85% 80%, rgba(124, 58, 237, 0.4), transparent 35%),
         linear-gradient(145deg, #07101f, #111b3c);
 }
 
@@ -227,9 +205,6 @@ button {
     font-size: 0.9rem;
 }
 
-
-/* DESKTOP */
-
 #desktop {
     position: relative;
     display: none;
@@ -239,18 +214,11 @@ button {
     padding: 54px 22px 100px;
     color: white;
     background:
-        radial-gradient(
-            circle at 18% 20%,
-            rgba(255, 255, 255, 0.23),
-            transparent 24%
-        ),
+        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.23), transparent 24%),
         linear-gradient(135deg, #2563eb, #7c3aed);
     background-size: cover;
     transition: background 0.45s ease;
 }
-
-
-/* TOP MENU BAR */
 
 #menubar {
     position: fixed;
@@ -369,9 +337,6 @@ button {
     background: #dbe2ea;
 }
 
-
-/* DESKTOP ICONS */
-
 #desktop-icons {
     display: flex;
     width: 90px;
@@ -411,9 +376,6 @@ button {
 .icon > span:last-child {
     font-size: 0.84rem;
 }
-
-
-/* WINDOWS */
 
 .window {
     position: absolute;
@@ -488,241 +450,42 @@ button {
     padding: 20px;
 }
 
-
-/* FILE EXPLORER */
-
-.files-window {
-    width: min(760px, calc(100vw - 32px));
-    height: min(530px, calc(100vh - 80px));
-}
-
-.files-toolbar {
-    display: flex;
-    min-height: 52px;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 10px;
-    border-bottom: 1px solid #dbe3ef;
-    background: rgba(248, 250, 252, 0.94);
-}
-
-.files-toolbar button,
-.file-editor button {
-    width: auto;
-    margin: 0;
-    padding: 8px 10px;
-    border: 1px solid #d4ddea;
-    border-radius: 9px;
-    color: #334155;
-    background: white;
-    cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.files-toolbar button:hover:not(:disabled),
-.file-editor button:hover {
-    border-color: #a5b4fc;
-    background: #eef2ff;
-}
-
-.files-toolbar button:disabled {
-    cursor: not-allowed;
-    opacity: 0.42;
-}
-
-.files-toolbar .danger-button:not(:disabled) {
-    color: #be123c;
-}
-
-#files-back {
-    font-size: 1rem;
-}
-
-#files-path {
-    min-width: 0;
-    flex: 1;
-    overflow: hidden;
-    padding: 8px 11px;
-    border: 1px solid #dbe3ef;
-    border-radius: 9px;
-    color: #475569;
-    background: white;
-    font-size: 0.8rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .files-content {
-    position: relative;
-    height: calc(100% - 128px);
-    min-height: 0;
-    overflow-y: auto;
-    padding: 14px;
-    background:
-        radial-gradient(
-            circle at 92% 8%,
-            rgba(165, 180, 252, 0.18),
-            transparent 24%
-        ),
-        rgba(248, 250, 252, 0.72);
+    display: grid;
+    gap: 8px;
 }
 
-.files-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-    align-content: start;
-    gap: 10px;
-}
-
-.file-entry {
-    display: grid;
-    min-height: 108px;
-    place-items: center;
-    gap: 5px;
-    padding: 12px 8px;
-    border: 1px solid transparent;
-    border-radius: 13px;
+.file-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 13px;
+    padding: 12px;
+    border: 0;
+    border-radius: 12px;
     color: var(--dark);
     background: transparent;
-    cursor: default;
-    text-align: center;
-    user-select: none;
+    cursor: pointer;
+    text-align: left;
 }
 
-.file-entry:hover {
-    border-color: rgba(129, 140, 248, 0.25);
-    background: rgba(99, 102, 241, 0.08);
+.file-item:hover {
+    background: rgba(99, 102, 241, 0.1);
 }
 
-.file-entry.selected {
-    border-color: #818cf8;
-    background: rgba(99, 102, 241, 0.15);
-    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.12);
+.file-item > span:first-child {
+    font-size: 1.8rem;
 }
 
-.file-entry-icon {
-    font-size: 2.6rem;
-    line-height: 1;
-}
-
-.file-entry strong {
+.file-item strong,
+.file-item small {
     display: block;
-    overflow-wrap: anywhere;
-    font-size: 0.82rem;
 }
 
-.file-entry small {
+.file-item small {
+    margin-top: 3px;
     color: var(--muted);
-    font-size: 0.69rem;
 }
-
-.files-empty {
-    display: grid;
-    min-height: 250px;
-    place-items: center;
-    align-content: center;
-    gap: 7px;
-    color: #64748b;
-    text-align: center;
-}
-
-.files-empty[hidden] {
-    display: none;
-}
-
-.files-empty span {
-    font-size: 3.5rem;
-}
-
-.files-empty small {
-    max-width: 260px;
-}
-
-.files-statusbar {
-    display: flex;
-    height: 32px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 13px;
-    border-top: 1px solid #dbe3ef;
-    color: #64748b;
-    background: #f8fafc;
-    font-size: 0.72rem;
-}
-
-.file-editor {
-    position: absolute;
-    z-index: 4;
-    inset: 44px 0 0;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    background: #f8fafc;
-}
-
-.file-editor[hidden] {
-    display: none;
-}
-
-.file-editor-heading,
-.file-editor-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 14px;
-    border-bottom: 1px solid #dbe3ef;
-    background: white;
-}
-
-.file-editor-heading div {
-    display: grid;
-    gap: 2px;
-}
-
-.file-editor-heading small {
-    color: var(--accent);
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-}
-
-#file-editor-close {
-    width: 31px;
-    height: 31px;
-    padding: 0;
-    border-radius: 50%;
-    font-size: 1.1rem;
-}
-
-#file-editor-content {
-    width: 100%;
-    min-height: 0;
-    resize: none;
-    padding: 18px;
-    border: 0;
-    outline: 0;
-    color: #1e293b;
-    background: #f8fafc;
-    font: 0.92rem/1.65 "Cascadia Code", "Consolas", monospace;
-}
-
-.file-editor-actions {
-    border-top: 1px solid #dbe3ef;
-    border-bottom: 0;
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-#file-editor-save {
-    color: white;
-    border-color: var(--accent);
-    background: var(--accent);
-}
-
-
-/* BROWSER */
 
 .browser-content {
     text-align: center;
@@ -772,76 +535,10 @@ button {
     font-size: 0.88rem;
 }
 
-
-/* SETTINGS */
-
 .settings-content {
     display: grid;
     gap: 20px;
 }
-
-.wallpaper-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-}
-
-.wallpaper-grid .wallpaper {
-    height: 72px;
-    padding: 0;
-    border: 3px solid transparent;
-    border-radius: 13px;
-    cursor: pointer;
-    transition: border-color 0.2s, transform 0.2s;
-}
-
-.wallpaper-grid .wallpaper:hover,
-.wallpaper-grid .wallpaper.selected {
-    border-color: white;
-    outline: 2px solid var(--accent);
-    transform: translateY(-2px);
-}
-
-.wallpaper-one {
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
-}
-
-.wallpaper-two {
-    background: linear-gradient(
-        135deg,
-        #f97316,
-        #db2777 55%,
-        #6d28d9
-    );
-}
-
-.wallpaper-three {
-    background:
-        radial-gradient(
-            circle at 30% 30%,
-            #34d399,
-            transparent 32%
-        ),
-        linear-gradient(145deg, #042f2e, #0f766e);
-}
-
-.wallpaper-four {
-    background:
-        radial-gradient(
-            circle at 20% 25%,
-            #818cf8,
-            transparent 3%
-        ),
-        radial-gradient(
-            circle at 70% 35%,
-            #ffffff,
-            transparent 1%
-        ),
-        linear-gradient(145deg, #020617, #172554);
-}
-
-
-/* MESSAGE WINDOW */
 
 .prompt-window {
     width: min(390px, calc(100vw - 32px));
@@ -889,8 +586,43 @@ button {
     background: var(--accent-hover);
 }
 
+.wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
 
-/* DOCK */
+.wallpaper-grid .wallpaper {
+    height: 72px;
+    padding: 0;
+    border: 3px solid transparent;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.wallpaper-grid .wallpaper:hover,
+.wallpaper-grid .wallpaper.selected {
+    border-color: white;
+    outline: 2px solid var(--accent);
+    transform: translateY(-2px);
+}
+
+.wallpaper-one {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.wallpaper-two {
+    background: linear-gradient(135deg, #f97316, #db2777 55%, #6d28d9);
+}
+
+.wallpaper-three {
+    background: radial-gradient(circle at 30% 30%, #34d399, transparent 32%), linear-gradient(145deg, #042f2e, #0f766e);
+}
+
+.wallpaper-four {
+    background: radial-gradient(circle at 20% 25%, #818cf8, transparent 3%), radial-gradient(circle at 70% 35%, #fff, transparent 1%), linear-gradient(145deg, #020617, #172554);
+}
 
 #dock {
     position: fixed;
@@ -942,8 +674,7 @@ button {
     background: linear-gradient(145deg, #818cf8, #6d5dfc);
 }
 
-
-/* START MENU */
+/* Start menu */
 
 #start-menu {
     position: fixed;
@@ -958,10 +689,8 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 24px;
     color: var(--dark);
-    background: linear-gradient(
-        rgba(248, 250, 252, 0.94),
-        rgba(238, 242, 255, 0.94)
-    );
+    background:
+        linear-gradient(rgba(248, 250, 252, 0.94), rgba(238, 242, 255, 0.94));
     box-shadow: 0 30px 90px rgba(15, 23, 42, 0.42);
     backdrop-filter: blur(30px);
     transform: translateX(-50%);
@@ -1108,8 +837,7 @@ button {
     background: rgba(255, 255, 255, 0.75);
 }
 
-
-/* NOVA STORE */
+/* Nova Store */
 
 .store-window {
     width: min(690px, calc(100vw - 32px));
@@ -1120,11 +848,7 @@ button {
     max-height: min(620px, calc(100vh - 110px));
     overflow-y: auto;
     background:
-        radial-gradient(
-            circle at 90% 10%,
-            rgba(165, 180, 252, 0.28),
-            transparent 28%
-        ),
+        radial-gradient(circle at 90% 10%, rgba(165, 180, 252, 0.28), transparent 28%),
         rgba(248, 250, 252, 0.86);
 }
 
@@ -1149,12 +873,6 @@ button {
 
 .store-bag {
     font-size: 3rem;
-}
-
-.store-section-title {
-    margin: 22px 2px 0;
-    color: #1e293b;
-    font-size: 1rem;
 }
 
 .store-grid {
@@ -1237,8 +955,109 @@ button {
     cursor: default;
 }
 
+/* Calculator */
 
-/* SOON SECTION */
+.calculator-window {
+    width: min(360px, calc(100vw - 32px));
+}
+
+.calculator-content {
+    background: #eef2ff;
+}
+
+#calculator-display {
+    width: 100%;
+    height: 64px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 12px;
+    outline: none;
+    color: #111827;
+    background: white;
+    text-align: right;
+    font-size: 1.8rem;
+    font-weight: 650;
+}
+
+.calculator-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.calculator-grid button {
+    min-height: 48px;
+    border: 0;
+    border-radius: 11px;
+    color: #1e293b;
+    background: white;
+    box-shadow: 0 2px 7px rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.calculator-grid button:hover {
+    filter: brightness(0.97);
+}
+
+.calculator-grid .calculator-operator {
+    color: #4c1d95;
+    background: #ede9fe;
+}
+
+.calculator-grid .calculator-special {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.calculator-grid .calculator-equals {
+    color: white;
+    background: var(--accent);
+}
+
+/* Notes */
+
+.notes-window {
+    height: 430px;
+}
+
+.notes-toolbar {
+    display: flex;
+    height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    background: #f8fafc;
+}
+
+#notes-status {
+    color: #16a34a;
+    font-size: 0.78rem;
+}
+
+#notes-textarea {
+    width: 100%;
+    height: calc(100% - 88px);
+    resize: none;
+    padding: 20px;
+    border: 0;
+    outline: none;
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.92);
+    font: 1rem/1.6 "Segoe UI", Arial, sans-serif;
+}
+
+/* Store sections and upcoming apps */
+
+.store-section-title {
+    margin: 22px 2px 0;
+    color: #1e293b;
+    font-size: 1rem;
+}
 
 .soon-section {
     margin-top: 28px;
@@ -1320,106 +1139,7 @@ button {
     font-size: 0.65rem;
 }
 
-
-/* CALCULATOR */
-
-.calculator-window {
-    width: min(360px, calc(100vw - 32px));
-}
-
-.calculator-content {
-    background: #eef2ff;
-}
-
-#calculator-display {
-    width: 100%;
-    height: 64px;
-    padding: 10px 14px;
-    border: 0;
-    border-radius: 12px;
-    outline: none;
-    color: #111827;
-    background: white;
-    text-align: right;
-    font-size: 1.8rem;
-    font-weight: 650;
-}
-
-.calculator-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 9px;
-    margin-top: 14px;
-}
-
-.calculator-grid button {
-    min-height: 48px;
-    border: 0;
-    border-radius: 11px;
-    color: #1e293b;
-    background: white;
-    box-shadow: 0 2px 7px rgba(15, 23, 42, 0.08);
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.calculator-grid button:hover {
-    filter: brightness(0.97);
-}
-
-.calculator-grid .calculator-operator {
-    color: #4c1d95;
-    background: #ede9fe;
-}
-
-.calculator-grid .calculator-special {
-    color: #1d4ed8;
-    background: #dbeafe;
-}
-
-.calculator-grid .calculator-equals {
-    color: white;
-    background: var(--accent);
-}
-
-
-/* NOTES */
-
-.notes-window {
-    height: 430px;
-}
-
-.notes-toolbar {
-    display: flex;
-    height: 44px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #334155;
-    background: #f8fafc;
-}
-
-#notes-status {
-    color: #16a34a;
-    font-size: 0.78rem;
-}
-
-#notes-textarea {
-    width: 100%;
-    height: calc(100% - 88px);
-    resize: none;
-    padding: 20px;
-    border: 0;
-    outline: none;
-    color: #1e293b;
-    background: rgba(255, 255, 255, 0.92);
-    font: 1rem/1.6 "Segoe UI", Arial, sans-serif;
-}
-
-
-/* PAINT */
+/* Nova Paint */
 
 .paint-window {
     width: min(760px, calc(100vw - 32px));
@@ -1505,9 +1225,6 @@ button {
     touch-action: none;
 }
 
-
-/* MOBILE */
-
 @media (max-width: 650px) {
     .top-menu:nth-of-type(2),
     .top-menu:nth-of-type(3),
@@ -1571,27 +1288,6 @@ button {
         grid-template-columns: 1fr;
     }
 
-    .files-window {
-        height: min(560px, calc(100vh - 80px));
-    }
-
-    .files-toolbar {
-        flex-wrap: wrap;
-    }
-
-    #files-path {
-        order: -1;
-        flex-basis: calc(100% - 48px);
-    }
-
-    .files-content {
-        height: calc(100% - 170px);
-    }
-
-    .files-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .paint-toolbar {
         flex-wrap: wrap;
     }
@@ -1600,9 +1296,6 @@ button {
         margin-left: 0;
     }
 }
-
-
-/* REDUCED MOTION */
 
 @media (prefers-reduced-motion: reduce) {
     *,
